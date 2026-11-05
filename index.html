@@ -3,239 +3,464 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BreathCare AI - Sàng Lọc Nguy Cơ Hôi Miệng (Halitosis)</title>
+  <title>Explainable Bad Breath Assessment System</title>
   
-  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Lucide Icons CDN -->
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Pure CSS Stylesheet (Common & Specialized Styles) -->
+  <!-- Pure CSS Mobile Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Mobile/Tablet Frame Wrapper -->
-  <div class="app-container">
+  <!-- Khung mô phỏng thiết bị Mobile App -->
+  <div class="mobile-device-shell">
 
-    <!-- Top Safe Area / Status Bar Header -->
-    <header class="app-header">
-      <div class="patient-profile">
-        <div class="patient-avatar-wrap">
-          <div class="patient-avatar">
-            <div class="patient-avatar__inner">TT</div>
+    <!-- Mobile Top Status Bar -->
+    <div class="mobile-status-bar">
+      <span>09:41</span>
+      <div class="mobile-status-bar__notch"></div>
+      <div class="mobile-status-bar__icons">
+        <i data-lucide="signal" style="width: 12px; height: 12px;"></i>
+        <i data-lucide="wifi" style="width: 12px; height: 12px;"></i>
+        <i data-lucide="battery" style="width: 14px; height: 14px;"></i>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         MÀN HÌNH 1: ĐĂNG NHẬP & ĐĂNG KÝ (SCREEN-AUTH)
+         ========================================================================== -->
+    <div id="screen-auth" class="app-screen">
+      <div class="auth-scroll-body">
+        <!-- Logo & App Name -->
+        <div class="auth-header">
+          <div class="auth-logo-badge">
+            <i data-lucide="activity" style="width: 1.85rem; height: 1.85rem;"></i>
           </div>
-          <span class="online-dot"></span>
+          <h1 class="auth-title">Explainable Bad Breath Assessment System</h1>
+          <p class="auth-sub">Hệ thống giải thích & sàng lọc vi sinh khoang miệng tiền lâm sàng</p>
         </div>
-        <div>
-          <div class="patient-name-row">
-            <h1 class="patient-name">Trần Tuấn Anh</h1>
-            <span class="badge badge-teal">Bệnh nhân</span>
+
+        <!-- Auth Tabs: Đăng nhập / Đăng ký -->
+        <div class="auth-tabs">
+          <button id="tabLoginBtn" class="auth-tab-btn active" onclick="switchAuthTab('login')">
+            Đăng nhập
+          </button>
+          <button id="tabRegisterBtn" class="auth-tab-btn" onclick="switchAuthTab('register')">
+            Đăng ký mới
+          </button>
+        </div>
+
+        <!-- Form Đăng nhập -->
+        <div id="loginFormBox" class="shared-form-card">
+          <div class="field-group">
+            <label class="field-label">Tên tài khoản (Username)</label>
+            <div class="input-control-box">
+              <i data-lucide="user" class="field-icon"></i>
+              <input type="text" id="loginUsername" value="Trần Tuấn Anh" placeholder="Nhập username...">
+            </div>
           </div>
-          <p class="patient-meta">
-            <i data-lucide="shield-check" style="width: 14px; height: 14px; color: var(--brand-600);"></i>
-            <span>Hồ sơ bảo mật: #VSC-3184</span>
-          </p>
+
+          <div class="field-group">
+            <label class="field-label">Mật khẩu</label>
+            <div class="input-control-box">
+              <i data-lucide="lock" class="field-icon"></i>
+              <input type="password" id="loginPassword" value="••••••••" placeholder="Nhập mật khẩu...">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Vai trò đăng nhập</label>
+            <div class="select-control-box">
+              <i data-lucide="shield-check" class="field-icon"></i>
+              <select id="authRoleSelect">
+                <option value="user">Người dùng</option>
+                <option value="admin">Bác sĩ</option>
+              </select>
+              <i data-lucide="chevron-down" class="select-chevron"></i>
+            </div>
+          </div>
+
+          <button onclick="handleLoginSubmit()" class="btn-submit-main">
+            <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+            <span>Đăng nhập phiên làm việc</span>
+          </button>
+        </div>
+
+        <!-- Form Đăng ký -->
+        <div id="registerFormBox" class="shared-form-card hidden" style="display: none;">
+          <div class="field-group">
+            <label class="field-label">Tên tài khoản (Username) <span class="required-star">*</span></label>
+            <div class="input-control-box">
+              <i data-lucide="user-plus" class="field-icon"></i>
+              <input type="text" id="regUsername" placeholder="Ví dụ: tuananhtran">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Số điện thoại <span class="required-star">*</span></label>
+            <div class="input-control-box">
+              <i data-lucide="phone" class="field-icon"></i>
+              <input type="tel" id="regPhone" placeholder="0912 345 678">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Mật khẩu bảo mật <span class="required-star">*</span></label>
+            <div class="input-control-box">
+              <i data-lucide="lock" class="field-icon"></i>
+              <input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự...">
+            </div>
+          </div>
+
+          <button onclick="handleRegisterSubmit()" class="btn-submit-main">
+            <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
+            <span>Xác nhận đăng ký & Bắt đầu</span>
+          </button>
         </div>
       </div>
+    </div>
 
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <button id="notifyBtn" class="btn-icon" title="Thông báo">
-          <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
-          <span class="ping-indicator pulse"></span>
-          <span class="ping-indicator"></span>
-        </button>
-        <button onclick="switchTab('history')" class="btn-icon" title="Lịch sử nộp">
-          <i data-lucide="history" style="width: 16px; height: 16px;"></i>
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Scrollable Body Content -->
-    <main class="main-content">
-
-      <!-- Consultation Upcoming Alert Banner -->
-      <section class="consultation-banner">
-        <div class="consultation-banner__glow"></div>
-        
-        <div class="consultation-banner__header">
-          <div class="consultation-tag-live">
-            <span class="pulse-dot"></span>
-            <span>Lịch đo khí Halimeter & Khám • 14:30</span>
-          </div>
-          <span class="consultation-countdown">
-            <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Còn 2 giờ 15 phút
-          </span>
-        </div>
-
-        <div class="consultation-doctor-card">
-          <div class="doctor-avatar-box">
-            <i data-lucide="activity" style="width: 24px; height: 24px;"></i>
+    <!-- ==========================================================================
+         MÀN HÌNH 2: GIAO DIỆN BỆNH NHÂN (SCREEN-PATIENT)
+         ========================================================================== -->
+    <div id="screen-patient" class="app-screen hidden" style="display: none;">
+      <!-- Patient Top Header: Gọn gàng, ĐÃ BỎ NÚT ĐĂNG XUẤT THỪA VÌ ĐÃ CÓ Ở BOTTOM NAV -->
+      <header class="app-header">
+        <div class="patient-profile">
+          <div class="patient-avatar-wrap">
+            <div class="patient-avatar">
+              <div id="displayPatientAvatar" class="patient-avatar__inner">TT</div>
+            </div>
+            <span class="online-dot"></span>
           </div>
           <div>
-            <h3 class="doctor-name">ThS. BS Nguyễn Minh Đức</h3>
-            <p class="doctor-spec">Chuyên khoa Vi sinh Khoang miệng & Điều trị Hơi thở</p>
-            <p class="doctor-room">
-              <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i> Phòng đo khí quyển & vi sinh 204
+            <div style="display: flex; align-items: center; gap: 0.35rem;">
+              <h2 id="displayPatientName" class="patient-name">Trần Tuấn Anh</h2>
+              <span class="badge badge-teal">Bệnh nhân</span>
+            </div>
+            <p id="displayPatientRecord" class="patient-meta">
+              <i data-lucide="shield-check" style="width: 12px; height: 12px; color: var(--brand-600);"></i>
+              <span>#VSC-3184</span>
             </p>
           </div>
         </div>
 
-        <!-- Psychological Guidance Note -->
-        <div class="consultation-footer-note">
-          <i data-lucide="info" style="width: 14px; height: 14px; color: var(--brand-400); flex-shrink: 0; margin-top: 2px;"></i>
-          <span>85% nguồn gốc hơi thở xuất phát từ mảng sinh học đáy lưỡi - có thể điều trị dứt điểm hoàn toàn.</span>
-        </div>
-      </section>
+        <!-- Chỉ giữ 1 nút thông báo duy nhất, cực kỳ thoáng đãng -->
+        <button onclick="showToast('Bạn có lịch hẹn đo khí Halimeter lúc 14:30')" class="btn-icon" title="Thông báo">
+          <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+        </button>
+      </header>
 
-      <!-- Progress Tracking Metric -->
-      <section class="progress-card">
-        <div class="progress-header">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div class="icon-box icon-box--teal" style="width: 1.75rem; height: 1.75rem; border-radius: 8px;">
-              <i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i>
+      <!-- Patient Scrollable Content -->
+      <div class="screen-scroll-body">
+        <!-- Banner Lịch Khám với Bác sĩ -->
+        <section class="consultation-banner">
+          <div class="consultation-banner__header">
+            <div class="consultation-tag-live">
+              <span style="width: 6px; height: 6px; border-radius: 9999px; background-color: var(--brand-400);"></span>
+              <span>Đo khí Halimeter • 14:30</span>
+            </div>
+            <span style="font-size: 0.6875rem; color: #fde68a; font-weight: 600;">Còn 2h 15m</span>
+          </div>
+
+          <div class="consultation-doctor-card">
+            <div class="doctor-avatar-box">
+              <i data-lucide="activity" style="width: 22px; height: 22px;"></i>
             </div>
             <div>
-              <span style="font-size: 0.75rem; font-weight: 700; color: #1e293b;">Chuẩn bị tiền lâm sàng</span>
-              <p style="font-size: 0.6875rem; color: var(--calm-subtle);">Hỗ trợ đo chỉ số khí VSC chính xác</p>
+              <h3 style="font-size: 0.875rem; font-weight: 700;">ThS. BS Nguyễn Minh Đức</h3>
+              <p style="font-size: 0.6875rem; color: #cbd5e1; margin-top: 0.1rem;">Vi sinh Khoang miệng & Điều trị Hơi thở</p>
+              <p style="font-size: 0.65rem; color: #5eead4; margin-top: 0.2rem; display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="map-pin" style="width: 11px; height: 11px;"></i> Phòng khám 204
+              </p>
             </div>
           </div>
-          <span id="progressText" class="badge badge-teal" style="font-weight: 700;">1 / 3 Hoàn tất</span>
-        </div>
+        </section>
 
-        <!-- Progress Bar -->
-        <div class="progress-track">
-          <div id="progressBar" class="progress-fill" style="width: 33.3%;"></div>
-        </div>
-      </section>
-
-      <!-- Psychological Comfort Banner -->
-      <div class="comfort-banner">
-        <div class="comfort-icon">
-          <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i>
-        </div>
-        <div>
-          <h4 class="comfort-title">Không gian y khoa không định kiến & Tuyệt mật</h4>
-          <p class="comfort-desc">
-            Hơi thở có mùi (Halitosis) là tình trạng vi sinh vật y khoa hoàn toàn bình thường. Mọi mô tả cảm nhận và ảnh quang học mặt lưỡi chỉ dùng để phục vụ quá trình chẩn đoán riêng tư cùng Bác sĩ.
-          </p>
-        </div>
-      </div>
-
-      <!-- Core Workflow Checklist Cards -->
-      <div style="display: flex; flex-direction: column; gap: 0.875rem;">
-        <h2 class="section-label">
-          <span>Các bước chuẩn bị trước khi gặp Bác sĩ</span>
-          <span class="section-label__dot"></span>
-        </h2>
-
-        <!-- Step 1: Medical Declaration & Form -->
-        <div class="card card-clickable">
-          <div class="card-row">
-            <div class="icon-box icon-box--emerald">
-              <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
+        <!-- Thanh tiến trình tiền lâm sàng -->
+        <section class="card" style="padding: 0.875rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="clipboard-list" style="width: 15px; height: 15px; color: var(--brand-600);"></i>
+              <span style="font-size: 0.75rem; font-weight: 700;">Chuẩn bị tiền lâm sàng</span>
             </div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <h3 class="card-title">Bước 1: Khảo sát thói quen & Yếu tố nguy cơ</h3>
-                <span class="badge badge-emerald">Đã lưu trữ</span>
+            <span id="userProgressBadge" class="badge badge-teal">1 / 3 Hoàn tất</span>
+          </div>
+          <div class="progress-track">
+            <div id="userProgressBar" class="progress-fill" style="width: 33.3%;"></div>
+          </div>
+        </section>
+
+        <!-- 3 Bước quy trình chuẩn bị (Thiết kế chuẩn: 1 vùng Header và 1 vùng Nội dung) -->
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <!-- Bước 1: Khảo sát thói quen & Yếu tố nguy cơ -->
+          <div class="card step-card">
+            <!-- Vùng Header: Icon vuông + Tên bước + Thẻ trạng thái -->
+            <div class="step-card__header">
+              <div class="icon-box icon-box--emerald">
+                <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
               </div>
-              <p class="card-desc">
-                Đã ghi nhận tình trạng khô miệng (Xerostomia), thời điểm nặng nhất trong ngày và tiền sử trào ngược axit dạ dày (GERD).
-              </p>
-              <div class="card-actions">
-                <button onclick="openFormModal(true)" class="btn btn-teal-light">
-                  <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Chỉnh sửa câu trả lời
+              <h4 class="step-card__title">Bước 1: Khảo sát thói quen & Yếu tố nguy cơ</h4>
+              <span class="badge badge-emerald">Đã lưu</span>
+            </div>
+
+            <!-- Vùng Nội dung: Ở phía dưới, rộng 100% -->
+            <div class="step-card__body">
+              <p class="step-card__desc">Đã khai báo khô miệng (Xerostomia), thời điểm mùi và trào ngược dạ dày (GERD).</p>
+              <div class="step-card__actions">
+                <button onclick="openFormModal()" class="btn btn-secondary btn-full" style="height: 40px;">
+                  <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                  <span>Xem lại phiếu trả lời</span>
                 </button>
-                <span style="font-size: 0.6875rem; color: #94a3b8;">Đã gửi lúc 09:15</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Step 2: Tongue & Oral Cavity Photography -->
-        <div id="step2Card" class="card step-card-highlight">
-          <div class="step-card-highlight__ribbon">
-            Nơi vi khuẩn lưu huỳnh ẩn náu
-          </div>
-
-          <div class="card-row">
-            <div class="icon-box icon-box--teal">
-              <i data-lucide="camera" style="width: 20px; height: 20px;"></i>
+          <!-- Bước 2: Chụp ảnh cặn lưỡi -->
+          <div class="card step-card step-card--highlight">
+            <!-- Vùng Header: Icon vuông + Tên bước + Thẻ trạng thái -->
+            <div class="step-card__header">
+              <div class="icon-box icon-box--teal">
+                <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+              </div>
+              <h4 class="step-card__title">Bước 2: Chụp cặn rêu lưỡi & Hốc amidan</h4>
+              <span id="step2StatusBadge" class="badge badge-amber">Cần chụp trước</span>
             </div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <h3 class="card-title">Bước 2: Chụp cặn rêu lưỡi & Hốc amidan</h3>
-                <span id="step2Badge" class="badge badge-amber">Cần chụp trước</span>
-              </div>
-              <p class="card-desc">
-                Mặt lưng lưỡi và khe hốc amidan tích tụ hợp chất khí dễ bay hơi VSC (nguyên nhân gây mùi). Ảnh quang học giúp bác sĩ tính toán chỉ số phủ lưỡi (Winkel Tongue Coating Index).
-              </p>
 
-              <!-- Mini Guide Tags -->
-              <div style="margin-top: 0.625rem; display: flex; flex-wrap: wrap; gap: 0.375rem;">
-                <span class="chip-tag">
-                  <i data-lucide="sun" style="width: 12px; height: 12px; color: var(--amber-500);"></i> Đủ ánh sáng soi rêu
-                </span>
-                <span class="chip-tag">
-                  <i data-lucide="smile" style="width: 12px; height: 12px; color: var(--brand-600);"></i> Thả lỏng đầu lưỡi
-                </span>
-                <span class="chip-tag">
-                  <i data-lucide="shield" style="width: 12px; height: 12px; color: var(--indigo-600);"></i> Không cạo lưỡi trước chụp
-                </span>
-              </div>
+            <!-- Vùng Nội dung: Ở phía dưới, rộng 100% -->
+            <div class="step-card__body">
+              <p class="step-card__desc">Khung elip giải phẫu giúp cố định đáy lưỡi để bác sĩ tính chỉ số Winkel Index.</p>
 
-              <!-- Preview container if captured -->
-              <div id="capturedPreviewBox" class="photo-preview-box hidden">
-                <div style="display: flex; align-items: center; gap: 0.625rem;">
-                  <div id="thumbContainer" class="photo-preview-thumb">
-                    <img id="thumbImg" src="" alt="Thumbnail">
-                  </div>
+              <!-- Thumbnail nếu đã chụp -->
+              <div id="userCapturedThumbBox" class="photo-preview-thumb-box hidden" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <img id="userCapturedImg" src="" alt="Thumbnail">
                   <div>
-                    <p style="font-size: 0.75rem; font-weight: 700; color: #1e293b;">Ảnh mặt lưng lưỡi đạt chuẩn</p>
-                    <p style="font-size: 0.625rem; color: var(--emerald-600); font-weight: 600; display: flex; align-items: center; gap: 2px;">
-                      <i data-lucide="check" style="width: 12px; height: 12px;"></i> Phân tích sơ bộ: Có màng sinh học đáy lưỡi
-                    </p>
+                    <p style="font-size: 0.75rem; font-weight: 700; color: #0f172a; margin: 0;">Ảnh mặt lưng lưỡi đạt chuẩn</p>
+                    <p style="font-size: 0.625rem; color: var(--emerald-600); font-weight: 600; margin-top: 2px;">1080p • Đã căn chỉnh viền gai lưỡi</p>
                   </div>
                 </div>
-                <button onclick="openCameraModal()" class="btn btn-teal-light" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">Chụp lại</button>
+                <button onclick="openCameraModal()" class="btn btn-secondary" style="height: 32px; padding: 0 0.65rem; font-size: 0.6875rem;">Chụp lại</button>
               </div>
 
-              <!-- Action button -->
-              <div style="margin-top: 0.875rem;">
-                <button id="openCameraBtn" onclick="openCameraModal()" class="btn btn-primary btn-full">
-                  <i data-lucide="aperture" style="width: 16px; height: 16px;"></i>
-                  <span>Khung ngắm quang học mặt lưỡi & Amidan</span>
+              <!-- Nút hành động chụp ảnh: Rộng 100%, có background rõ ràng, border, cao 40px bằng nút Bước 1 -->
+              <div class="step-card__actions">
+                <button onclick="openCameraModal()" class="btn btn-primary btn-full" style="height: 40px;">
+                  <i data-lucide="camera" style="width: 15px; height: 15px;"></i>
+                  <span>Mở Camera Căn Chỉnh Giải Phẫu</span>
                 </button>
               </div>
             </div>
           </div>
+
+          <!-- Bước 3: Lịch sử đo khí Halimeter -->
+          <div class="card step-card">
+            <!-- Vùng Header: Icon vuông + Tên bước + Thẻ trạng thái -->
+            <div class="step-card__header">
+              <div class="icon-box icon-box--indigo">
+                <i data-lucide="history" style="width: 18px; height: 18px;"></i>
+              </div>
+              <h4 class="step-card__title">Bước 3: Lịch sử đo khí VSC (Halimeter)</h4>
+              <span class="badge badge-teal">2 lần trước</span>
+            </div>
+
+            <!-- Vùng Nội dung: Ở phía dưới, rộng 100% -->
+            <div class="step-card__body">
+              <div class="halimeter-stat-card">
+                <div>
+                  <span class="halimeter-stat-lbl">Lần đo gần nhất tại phòng khám:</span>
+                  <strong class="halimeter-stat-val">185 ppb</strong>
+                </div>
+                <span class="badge badge-amber">Theo dõi</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Nav Bar của Bệnh nhân -->
+      <nav class="bottom-nav">
+        <button onclick="showToast('Bạn đang ở Trang chủ')" class="nav-item active">
+          <i data-lucide="home" style="width: 18px; height: 18px;"></i>
+          <span>Trang chủ</span>
+        </button>
+
+        <button onclick="openFormModal()" class="nav-item">
+          <i data-lucide="clipboard-list" style="width: 18px; height: 18px;"></i>
+          <span>Khảo sát</span>
+        </button>
+
+        <button onclick="openCameraModal()" class="nav-fab-btn" title="Chụp ảnh cặn lưỡi">
+          <i data-lucide="camera" style="width: 20px; height: 20px;"></i>
+        </button>
+
+        <button onclick="openHistoryModal()" class="nav-item">
+          <i data-lucide="folder-clock" style="width: 18px; height: 18px;"></i>
+          <span>Lịch sử</span>
+        </button>
+
+        <button onclick="logout()" class="nav-item">
+          <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+          <span>Đăng xuất</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- ==========================================================================
+         MÀN HÌNH 3: GIAO DIỆN BÁC SĨ (SCREEN-DOCTOR)
+         GỒM 3 TRANG CON RIÊNG BIỆT: HỒ SƠ CA, LỊCH ĐO KHÍ, THỐNG KÊ
+         ========================================================================== -->
+    <div id="screen-doctor" class="app-screen hidden" style="display: none;">
+      <!-- Header Bác sĩ: Thiết kế Grid gọn gàng, tinh tế, không chèn ép -->
+      <header class="app-header doctor-header">
+        <div class="doctor-header-grid">
+          <div class="doctor-avatar-circle">
+            <i data-lucide="stethoscope" style="width: 20px; height: 20px;"></i>
+          </div>
+          <div class="doctor-header-meta">
+            <h2 class="doctor-name">BS. Nguyễn Minh Đức</h2>
+            <div class="doctor-status-line">
+              <span class="status-pulse-dot"></span>
+              <span>Phòng trực 204 • Khám vi sinh</span>
+            </div>
+          </div>
+          <button onclick="showToast('Phòng 204: 3 ca đang chờ đo khí')" class="btn-icon" title="Thông báo">
+            <i data-lucide="bell" style="width: 17px; height: 17px;"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- TRANG CON 1: HỒ SƠ CA BỆNH (CASES) -->
+      <div id="docSubpageCases" class="screen-scroll-body doc-subpage">
+        <!-- Dải Tóm Tắt Tình Trạng Ca Trực (Miller's Law & Cognitive Chunking - Giảm tải thị giác) -->
+        <div class="doctor-triage-strip">
+          <div class="triage-stat-item">
+            <span class="triage-stat-val">3</span>
+            <span class="triage-stat-lbl">Tổng ca</span>
+          </div>
+          <div class="triage-stat-divider"></div>
+          <div class="triage-stat-item triage-stat-urgent">
+            <div class="triage-urgent-badge">
+              <span class="triage-stat-val text-rose">1</span>
+              <span class="pulse-dot-urgent"></span>
+            </div>
+            <span class="triage-stat-lbl text-rose">VSC cao (Khẩn)</span>
+          </div>
+          <div class="triage-stat-divider"></div>
+          <div class="triage-stat-item">
+            <span class="triage-stat-val text-emerald">1</span>
+            <span class="triage-stat-lbl">Đã phác đồ</span>
+          </div>
+          <div class="triage-stat-divider"></div>
+          <div class="triage-stat-item">
+            <span class="triage-stat-val text-brand">100%</span>
+            <span class="triage-stat-lbl">Đã có ảnh</span>
+          </div>
         </div>
 
-        <!-- Step 3: Medical History & Prescriptions -->
-        <div class="card card-clickable">
-          <div class="card-row">
-            <div class="icon-box icon-box--indigo">
-              <i data-lucide="file-plus" style="width: 20px; height: 20px;"></i>
+        <!-- Bộ lọc hồ sơ nộp tới BS (Thiết kế Segmented Pills tinh gọn, Hick's Law) -->
+        <div class="doctor-filter-section">
+          <div class="doctor-filter-tabs no-scrollbar">
+            <button class="filter-tab-btn active" onclick="filterPatients('all', this)">
+              Tất cả <span>(3)</span>
+            </button>
+            <button class="filter-tab-btn" onclick="filterPatients('pending', this)">
+              Chờ duyệt <span>(1)</span>
+            </button>
+            <button class="filter-tab-btn filter-tab-urgent" onclick="filterPatients('urgent', this)">
+              Khẩn cấp <span>(1)</span>
+            </button>
+            <button class="filter-tab-btn" onclick="filterPatients('reviewed', this)">
+              Đã xử lý <span>(1)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Danh sách card hồ sơ được render bởi JS -->
+        <div id="adminPatientListContainer" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+      </div>
+
+      <!-- TRANG CON 2: LỊCH ĐO KHÍ HALIMETER (SCHEDULE) -->
+      <div id="docSubpageSchedule" class="screen-scroll-body doc-subpage hidden" style="display: none;">
+        <div class="schedule-summary-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--brand-900);">Lịch đo khí Halimeter hôm nay</span>
+            <span class="badge badge-teal">3 ca hẹn</span>
+          </div>
+          <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.2rem;">Phòng xét nghiệm vi sinh 204 • Máy Halimeter RH-17</p>
+        </div>
+
+        <div class="schedule-list">
+          <!-- Ca 1: 14:30 -->
+          <div class="schedule-item-card">
+            <div class="schedule-time-col">
+              <span class="sched-hour">14:30</span>
+              <span class="badge badge-amber" style="font-size: 0.5625rem; padding: 2px 4px;">Sắp tới</span>
             </div>
-            <div class="card-body">
-              <div class="card-title-row">
-                <h3 class="card-title">Bước 3: Thuốc gây khô miệng & Nước súc miệng</h3>
-                <span id="step3Badge" class="badge badge-slate">Bổ sung thêm</span>
+            <div class="schedule-info-col">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h4 style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin: 0;">Trần Tuấn Anh (28t)</h4>
+                <span class="badge badge-slate">#VSC-3184</span>
               </div>
-              <p class="card-desc">
-                Nhiều loại thuốc kháng dị ứng, thuốc huyết áp hoặc nước súc miệng chứa cồn có thể làm suy giảm tuyến nước bọt gây mùi hôi thứ phát.
-              </p>
-              
-              <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button onclick="openHistoryModal()" class="btn btn-secondary" style="flex: 1; min-width: 140px;">
-                  <i data-lucide="upload" style="width: 14px; height: 14px;"></i> Chụp nhãn thuốc/súc miệng
+              <p style="font-size: 0.6875rem; color: #475569; margin: 3px 0 6px 0;">Đo định kỳ kiểm tra nồng độ khí sau 2 tuần chải lưỡi</p>
+              <div class="schedule-actions-grid">
+                <button onclick="openPatientDossier('VSC-3184')" class="btn btn-secondary" style="height: 32px; font-size: 0.6875rem;">
+                  <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Xem hồ sơ
                 </button>
-                <button onclick="quickAddAllergy()" class="btn btn-secondary">
-                  <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Nhập nhanh thuốc đang dùng
+                <button onclick="showToast('Đang kết nối máy đo Halimeter cho bệnh nhân Trần Tuấn Anh...')" class="btn btn-primary" style="height: 32px; font-size: 0.6875rem;">
+                  <i data-lucide="play" style="width: 13px; height: 13px;"></i> Bắt đầu đo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ca 2: 15:15 (Khẩn cấp) -->
+          <div class="schedule-item-card urgent-border">
+            <div class="schedule-time-col">
+              <span class="sched-hour" style="color: var(--rose-600);">15:15</span>
+              <span class="badge badge-rose" style="font-size: 0.5625rem; padding: 2px 4px;">Khẩn</span>
+            </div>
+            <div class="schedule-info-col">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h4 style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin: 0;">Lê Thị Bích Ngọc (34t)</h4>
+                <span class="badge badge-rose">#VSC-8812</span>
+              </div>
+              <p style="font-size: 0.6875rem; color: #475569; margin: 3px 0 6px 0;">VSC rất cao (340 ppb) • Khạc hạt hôi ở hốc amidan</p>
+              <div class="schedule-actions-grid">
+                <button onclick="openPatientDossier('VSC-8812')" class="btn btn-secondary" style="height: 32px; font-size: 0.6875rem;">
+                  <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Xem hồ sơ
+                </button>
+                <button onclick="showToast('Đã gọi bệnh nhân Lê Thị Bích Ngọc vào phòng 204')" class="btn btn-primary" style="height: 32px; font-size: 0.6875rem; background-color: var(--rose-600);">
+                  <i data-lucide="user-check" style="width: 13px; height: 13px;"></i> Gọi vào phòng
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ca 3: 16:00 -->
+          <div class="schedule-item-card">
+            <div class="schedule-time-col">
+              <span class="sched-hour">16:00</span>
+              <span class="badge badge-emerald" style="font-size: 0.5625rem; padding: 2px 4px;">Hẹn trước</span>
+            </div>
+            <div class="schedule-info-col">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h4 style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin: 0;">Hoàng Văn Khang (42t)</h4>
+                <span class="badge badge-slate">#VSC-4920</span>
+              </div>
+              <p style="font-size: 0.6875rem; color: #475569; margin: 3px 0 6px 0;">Đo kiểm tra định kỳ sau điều trị ợ chua và màng bợn lưỡi</p>
+              <div class="schedule-actions-grid">
+                <button onclick="openPatientDossier('VSC-4920')" class="btn btn-secondary" style="height: 32px; font-size: 0.6875rem;">
+                  <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Xem hồ sơ
+                </button>
+                <button onclick="showToast('Chuẩn bị đầu ngậm đo khí cho bệnh nhân Hoàng Văn Khang')" class="btn btn-primary" style="height: 32px; font-size: 0.6875rem;">
+                  <i data-lucide="play" style="width: 13px; height: 13px;"></i> Bắt đầu đo
                 </button>
               </div>
             </div>
@@ -243,349 +468,383 @@
         </div>
       </div>
 
-      <!-- Quick Helpful Guide for Halitosis Examination Prep -->
-      <section class="guideline-box">
-        <h3 class="guideline-title">
-          <i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--brand-600);"></i> Quy chuẩn trước giờ đo hơi thở (Halimeter)
-        </h3>
-        <ul class="guideline-list">
-          <li><strong>Không ăn thực phẩm nặng mùi</strong> (tỏi, hành, mắm tôm, phô mai) trước giờ khám ít nhất 24 giờ.</li>
-          <li><strong>Không dùng kẹo cao su, xịt thơm miệng</strong> hoặc nước súc miệng chứa cồn trước giờ hẹn 2 tiếng.</li>
-          <li><strong>Uống nước lọc đều đặn</strong> để bảo toàn môi trường khoang miệng tự nhiên trước khi bác sĩ lấy mẫu khí.</li>
-        </ul>
-      </section>
+      <!-- TRANG CON 3: THỐNG KÊ LÂM SÀNG (ANALYTICS) -->
+      <div id="docSubpageAnalytics" class="screen-scroll-body doc-subpage hidden" style="display: none;">
+        <div class="stats-overview-grid">
+          <div class="stat-card">
+            <span class="stat-title">Tổng ca tiếp nhận</span>
+            <span class="stat-number">48</span>
+            <span class="stat-note" style="color: var(--emerald-600);">+12% so với tuần trước</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-title">Tỷ lệ VSC cao</span>
+            <span class="stat-number" style="color: var(--rose-600);">28%</span>
+            <span class="stat-note" style="color: var(--rose-600);">> 250 ppb cần ưu tiên</span>
+          </div>
+        </div>
 
-    </main>
+        <!-- Biểu đồ phân bổ nguyên nhân -->
+        <div class="stat-chart-card">
+          <h4 style="font-size: 0.75rem; font-weight: 700; color: #0f172a; margin: 0 0 0.75rem 0;">Phân bổ nguyên nhân hơi thở (Tháng này)</h4>
+          <div class="stat-bar-group">
+            <div class="stat-bar-label">
+              <span>Màng bợn cuống lưỡi</span>
+              <strong>68%</strong>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill" style="width: 68%; background-color: var(--brand-600);"></div>
+            </div>
+          </div>
 
-    <!-- Bottom Navigation Bar for User Role -->
-    <nav class="bottom-nav">
-      <button onclick="switchTab('home')" id="navHome" class="nav-item active">
-        <i data-lucide="home" style="width: 20px; height: 20px;"></i>
-        <span>Trang chủ</span>
-      </button>
+          <div class="stat-bar-group">
+            <div class="stat-bar-label">
+              <span>Sỏi amidan & Hốc họng</span>
+              <strong>18%</strong>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill" style="width: 18%; background-color: #a855f7;"></div>
+            </div>
+          </div>
 
-      <button onclick="switchTab('form')" id="navForm" class="nav-item">
-        <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
-        <span>Phiếu khảo sát</span>
-      </button>
+          <div class="stat-bar-group">
+            <div class="stat-bar-label">
+              <span>Viêm nướu & Kẽ chân răng</span>
+              <strong>14%</strong>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill" style="width: 14%; background-color: #f59e0b;"></div>
+            </div>
+          </div>
+        </div>
 
-      <button onclick="openCameraModal()" class="nav-fab-btn" title="Chụp ảnh quang học">
-        <i data-lucide="camera" style="width: 22px; height: 22px;"></i>
-      </button>
+        <button onclick="showToast('Đã xuất báo cáo thống kê lâm sàng dạng PDF')" class="btn btn-secondary btn-full" style="height: 42px; font-size: 0.75rem; margin-top: 0.25rem;">
+          <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+          <span>Xuất báo cáo ca trực</span>
+        </button>
+      </div>
 
-      <button onclick="switchTab('history')" id="navHistory" class="nav-item">
-        <i data-lucide="folder-clock" style="width: 20px; height: 20px;"></i>
-        <span>Lịch sử nộp</span>
-      </button>
+      <!-- Bottom Nav Bar RIÊNG CHO BÁC SĨ (CHUYỂN TRANG CON THỰC TẾ) -->
+      <nav class="bottom-nav doctor-bottom-nav">
+        <button id="docNav_cases" onclick="switchDoctorTab('cases')" class="nav-item active">
+          <i data-lucide="clipboard-list" style="width: 18px; height: 18px;"></i>
+          <span>Hồ sơ ca</span>
+        </button>
 
-      <button onclick="switchTab('profile')" id="navProfile" class="nav-item">
-        <i data-lucide="user-check" style="width: 20px; height: 20px;"></i>
-        <span>Hồ sơ BN</span>
-      </button>
-    </nav>
+        <button id="docNav_schedule" onclick="switchDoctorTab('schedule')" class="nav-item">
+          <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+          <span>Lịch đo khí</span>
+        </button>
 
-    <!-- ================= MODALS & OVERLAYS ================= -->
+        <button id="docNav_analytics" onclick="switchDoctorTab('analytics')" class="nav-item">
+          <i data-lucide="bar-chart-2" style="width: 18px; height: 18px;"></i>
+          <span>Thống kê</span>
+        </button>
 
-    <!-- 1. FULL CAMERA SIMULATOR MODAL -->
-    <div id="cameraModal" class="camera-modal hidden">
-      <!-- Camera Top Controls -->
+        <button onclick="logout()" class="nav-item">
+          <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+          <span>Đăng xuất</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- ==========================================================================
+         MÀN HÌNH 4: CAMERA CHỤP CẶN RÊU LƯỠI (SCREEN-CAMERA)
+         ========================================================================== -->
+    <div id="screen-camera" class="camera-screen hidden" style="display: none;">
       <div class="camera-top-bar">
-        <button onclick="closeCameraModal()" class="btn-icon-circle btn-icon-circle-glass">
+        <button onclick="closeCameraModal()" class="btn-icon" style="background: rgba(255,255,255,0.15); border: none; color: #ffffff;" title="Đóng camera">
           <i data-lucide="x" style="width: 20px; height: 20px;"></i>
         </button>
-        <div class="camera-top-bar__title">
-          <span class="camera-top-bar__tag">Khung định vị cặn rêu lưỡi & Amidan</span>
-          <p class="camera-top-bar__hint">Đưa lưỡi vừa khít khung oval để AI phân tích lớp phủ</p>
+        <div style="text-align: center;">
+          <span style="font-size: 0.6875rem; font-weight: 700; color: var(--brand-300); text-transform: uppercase;">
+            Khung định vị cặn rêu lưỡi
+          </span>
+          <p style="font-size: 0.5625rem; color: #cbd5e1;">Đưa mặt lưng lưỡi vừa khít khung elip</p>
         </div>
-        <button id="flashToggle" onclick="toggleFlash()" class="btn-icon-circle btn-icon-circle-glass">
-          <i data-lucide="zap-off" id="flashIcon" style="width: 20px; height: 20px;"></i>
+        <button id="cameraFlashBtn" onclick="toggleFlash()" class="btn-icon" style="background: rgba(255,255,255,0.15); border: none; color: #ffffff;" title="Bật/Tắt đèn flash">
+          <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
         </button>
       </div>
 
-      <!-- Center Viewport with Anatomical Guide Overlay -->
       <div class="camera-viewport">
-        <!-- Live Simulated Viewfinder Background -->
-        <div id="cameraViewfinder" class="camera-viewfinder-bg">
-          <svg style="width: 16rem; height: 16rem; opacity: 0.25; color: var(--brand-400);" class="pulse-soft" viewBox="0 0 200 200" fill="currentColor">
+        <div class="camera-viewfinder-bg">
+          <svg style="width: 14rem; height: 14rem; opacity: 0.18; color: var(--brand-400);" viewBox="0 0 200 200" fill="currentColor">
             <path d="M100 20 C 50 20, 30 70, 30 110 C 30 155, 60 185, 100 185 C 140 185, 170 155, 170 110 C 170 70, 150 20, 100 20 Z" />
           </svg>
         </div>
 
-        <!-- Flash highlight effect overlay -->
-        <div id="flashOverlay" class="camera-flash-overlay"></div>
+        <div id="flashOverlay" style="position: absolute; inset: 0; background-color: #ffffff; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;"></div>
 
-        <!-- Anatomical Guide Wireframe -->
-        <div class="anatomical-wireframe">
-          <span class="anatomical-label">
-            Đáy lưỡi & Khe hốc Amidan (Tập trung VSC)
+        <!-- Khung Elip Giải phẫu -->
+        <div class="anatomical-oval-wireframe">
+          <span style="background-color: rgba(0,0,0,0.7); color: var(--brand-300); font-size: 0.5625rem; padding: 0.15rem 0.5rem; border-radius: 9999px;">
+            Đáy lưỡi (Vùng sinh khí VSC)
           </span>
-
-          <!-- Crosshair Center Indicator -->
-          <div class="crosshair">
-            <div class="crosshair__dot"></div>
+          <div style="width: 2.5rem; height: 2.5rem; border: 1px solid rgba(94, 234, 212, 0.4); border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 5px; height: 5px; background-color: var(--brand-400); border-radius: 9999px;"></div>
           </div>
-
-          <span class="anatomical-label">
-            Mặt trước lưỡi & Đường viền môi dưới
-          </span>
-        </div>
-
-        <!-- Real-time Quality Badges on HUD -->
-        <div class="camera-hud-badges">
-          <span class="camera-hud-badge">
-            <i data-lucide="check" style="width: 14px; height: 14px;"></i> Chiếu sáng: Thấy rõ gai lưỡi
-          </span>
-          <span class="camera-hud-badge">
-            <i data-lucide="focus" style="width: 14px; height: 14px;"></i> Độ tương phản rêu: Đạt chuẩn
+          <span style="background-color: rgba(0,0,0,0.7); color: var(--brand-300); font-size: 0.5625rem; padding: 0.15rem 0.5rem; border-radius: 9999px;">
+            Đầu lưỡi & Viền môi
           </span>
         </div>
       </div>
 
-      <!-- Camera Bottom Shutter Bar -->
-      <div class="camera-bottom-bar">
-        <!-- Angle Selector -->
-        <div class="angle-switch-group">
-          <button onclick="setAngle(this, 'mat-lung-luoi')" class="angle-btn active">Mặt lưng lưỡi (Dorsal)</button>
-          <button onclick="setAngle(this, 'hoc-amidan')" class="angle-btn">Khe Amidan (Tonsil)</button>
-          <button onclick="setAngle(this, 'niem-mac-rang')" class="angle-btn">Viền nướu & Kẽ răng</button>
-        </div>
-
-        <!-- Shutter Controls Row -->
-        <div class="shutter-controls-row">
-          <!-- Gallery Upload Alternative -->
-          <label class="btn-icon-circle btn-icon-circle-glass" style="cursor: pointer;" title="Tải ảnh từ máy">
-            <i data-lucide="image" style="width: 20px; height: 20px;"></i>
-            <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
-          </label>
-
-          <!-- Main Capture Trigger -->
-          <button onclick="triggerCapture()" class="shutter-btn" title="Chụp ảnh">
-            <div class="shutter-btn__core"></div>
-          </button>
-
-          <!-- Info Guide Prompt -->
-          <button onclick="showCameraTips()" class="btn-icon-circle btn-icon-circle-glass" title="Mẹo chụp">
-            <i data-lucide="help-circle" style="width: 20px; height: 20px;"></i>
-          </button>
-        </div>
+      <div style="padding: 1.25rem 1rem; background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.85) 70%, transparent 100%); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+        <button onclick="snapPhoto()" class="shutter-btn" title="Chụp ảnh cặn lưỡi">
+          <div class="shutter-btn__core"></div>
+        </button>
+        <span style="font-size: 0.625rem; color: #cbd5e1;">Bấm nút trắng để chụp và gửi Bác sĩ Đức</span>
       </div>
     </div>
 
-    <!-- 2. PHOTO VERIFICATION & RESULT MODAL -->
-    <div id="previewResultModal" class="modal-overlay modal-overlay--center hidden">
-      <div class="modal-content modal-content--dialog">
-        <div style="padding: 1.25rem; text-align: center;">
-          <div class="icon-box icon-box--emerald" style="margin: 0 auto 0.75rem auto; width: 3rem; height: 3rem; border-radius: 9999px;">
-            <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
-          </div>
-          <h3 class="modal-header__title" style="font-size: 1rem;">Đã ghi nhận ảnh cặn rêu lưỡi!</h3>
-          <p class="modal-header__sub" style="font-size: 0.75rem; margin-top: 0.25rem;">Hệ thống nhận diện thấy rõ cấu trúc gai hình chỉ (Filiform papillae) & mảng phủ đáy lưỡi.</p>
-          
-          <!-- Image Captured Preview Card -->
-          <div class="photo-result-display">
-            <img id="resultImagePreview" src="" alt="Tongue Coating Preview">
-            <span class="photo-result-tag">
-              Vùng: <span id="labelAngle">Mặt lưng lưỡi (Dorsal)</span>
-            </span>
-          </div>
-
-          <div class="note-input-box">
-            <p class="note-input-label">Mô tả thêm cho bác sĩ Đức:</p>
-            <input type="text" id="photoPatientNote" placeholder="Ví dụ: Rêu trắng nhiều vào buổi sáng, cảm giác miệng đắng..." class="form-input" style="margin-top: 0.375rem; background-color: #ffffff;">
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button onclick="closeResultModal(false)" class="btn btn-secondary" style="flex: 1;">
-            Chụp lại
-          </button>
-          <button onclick="confirmAndSavePhoto()" class="btn btn-primary" style="flex: 1;">
-            Lưu hồ sơ tiền lâm sàng
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. GOOGLE FORM / MEDICAL QUESTIONNAIRE MODAL -->
-    <div id="formModal" class="modal-overlay hidden">
+    <!-- ==========================================================================
+         MODAL: XEM ĐẦY ĐỦ GIẤY TỜ BỆNH ÁN NỘP TỚI BÁC SĨ (PATIENT DOSSIER)
+         ĐỒNG NHẤT PADDING, VIỀN & HIỂN THỊ ĐẦY ĐỦ TABS
+         ========================================================================== -->
+    <div id="patientDossierModal" class="modal-overlay hidden" style="display: none;">
       <div class="modal-content">
-        <!-- Header -->
+        <!-- Header Modal -->
         <div class="modal-header">
           <div class="modal-header__info">
             <div class="icon-box icon-box--teal" style="width: 2rem; height: 2rem; border-radius: 8px;">
               <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
             </div>
             <div>
-              <h3 class="modal-header__title">Phiếu đánh giá nguy cơ Hôi miệng (Halitosis)</h3>
-              <p class="modal-header__sub">Tương thích biểu mẫu Google Form y khoa</p>
+              <h3 id="dossierTitle" class="modal-header__title">Hồ sơ nộp tới Bác sĩ Đức</h3>
+              <p class="modal-header__sub"><span id="dossierRecordId">#VSC-3184</span> • Giấy tờ tiền lâm sàng</p>
             </div>
           </div>
-          <button onclick="closeFormModal()" class="btn-icon" style="width: 2rem; height: 2rem; border-radius: 9999px;">
+          <button onclick="closePatientDossier()" class="btn-icon" style="width: 2rem; height: 2rem;" title="Đóng">
             <i data-lucide="x" style="width: 16px; height: 16px;"></i>
           </button>
         </div>
 
-        <!-- Form Questions Body -->
+        <!-- Body Modal -->
         <div class="modal-body">
-          <!-- Question 1 -->
-          <div class="form-group">
-            <label class="form-label">
-              1. Bạn nhận thấy hơi thở có mùi rõ rệt nhất vào thời điểm nào? <span class="form-required">*</span>
-            </label>
-            <div class="form-grid-2">
-              <label class="form-checkbox-label">
-                <input type="checkbox" checked>
-                <span>Ngay sau khi thức dậy</span>
-              </label>
-              <label class="form-checkbox-label">
-                <input type="checkbox">
-                <span>Sau khi ăn xong 1-2 tiếng</span>
-              </label>
-              <label class="form-checkbox-label">
-                <input type="checkbox" checked>
-                <span>Cảm giác kéo dài suốt cả ngày</span>
-              </label>
-              <label class="form-checkbox-label">
-                <input type="checkbox">
-                <span>Khi đói hoặc nói chuyện nhiều</span>
-              </label>
+          <!-- Thẻ tóm tắt thông tin bệnh nhân: Bố cục chia ROW rõ ràng, không rớt dòng -->
+          <div class="dossier-patient-card">
+            <!-- ROW 1: Tên bệnh nhân + Tuổi/Giới tính (trái) | Điểm số VSC ppb (phải) -->
+            <div class="dpc-row-header">
+              <div class="dpc-meta-left">
+                <h4 id="dossierPatientName" class="dpc-patient-name">Trần Tuấn Anh</h4>
+                <span id="dossierPatientDemographics" class="badge badge-slate dpc-demographics-badge">Nam • 28 tuổi</span>
+              </div>
+              <span id="dossierVscScore" class="badge badge-mono badge-amber dpc-vsc-badge">185 ppb</span>
+            </div>
+
+            <!-- ROW 2: Hai cột thông tin hành chính (SĐT & Giờ nộp) -->
+            <div class="dpc-row-info">
+              <div class="dpc-info-col">
+                <i data-lucide="phone" style="width: 12px; height: 12px; color: #64748b;"></i>
+                <span id="dossierPatientPhone" class="dpc-info-val">0912 345 678</span>
+              </div>
+              <div class="dpc-info-col" style="justify-content: flex-end;">
+                <i data-lucide="clock" style="width: 12px; height: 12px; color: #64748b;"></i>
+                <span id="dossierSubmittedTime" class="dpc-info-val">Nộp: 09:22 hôm nay</span>
+              </div>
+            </div>
+
+            <!-- ROW 3: Đánh giá phân loại nồng độ khí VSC -->
+            <div class="dpc-row-status">
+              <span class="dpc-status-label">Đánh giá tiền lâm sàng:</span>
+              <span id="dossierVscLevel" class="dpc-status-val">Nguy cơ VSC trung bình</span>
             </div>
           </div>
 
-          <!-- Question 2 -->
-          <div class="form-group">
-            <label class="form-label">
-              2. Các cảm giác đi kèm trong khoang miệng:
-            </label>
-            <div style="display: flex; flex-direction: column; gap: 0.375rem;">
-              <label class="form-checkbox-label">
-                <input type="checkbox" checked>
-                <span>Khô miệng, ít nước bọt, đặc quánh vào ban đêm</span>
-              </label>
-              <label class="form-checkbox-label">
-                <input type="checkbox" checked>
-                <span>Vị đắng hoặc vị kim loại lợ ở cuống lưỡi</span>
-              </label>
-              <label class="form-checkbox-label">
-                <input type="checkbox">
-                <span>Từng khạc ra hạt nhỏ màu trắng đục có mùi hôi (sỏi amidan)</span>
-              </label>
-              <label class="form-checkbox-label">
-                <input type="checkbox">
-                <span>Ợ hơi, ợ chua, trào ngược dịch dạ dày (GERD)</span>
-              </label>
+          <!-- Tabs chọn loại giấy tờ: Đồng nhất padding, mượt mà -->
+          <div class="dossier-tabs">
+            <button id="dossierTab_survey" class="dossier-tab-btn active" onclick="switchDossierTab('survey')">
+              1. Phiếu khảo sát
+            </button>
+            <button id="dossierTab_photo" class="dossier-tab-btn" onclick="switchDossierTab('photo')">
+              2. Ảnh cặn rêu lưỡi
+            </button>
+            <button id="dossierTab_meds" class="dossier-tab-btn" onclick="switchDossierTab('meds')">
+              3. Thuốc & Súc miệng
+            </button>
+          </div>
+
+          <!-- PANEL 1: Phiếu khảo sát (Các box câu hỏi có padding & viền chuẩn hóa) -->
+          <div id="dossierPanel_survey" style="display: flex; flex-direction: column; gap: 0.65rem;">
+            <div class="survey-qa-box">
+              <span class="survey-q">Thời điểm mùi khó chịu nhất:</span>
+              <p id="dossierSurveyPeak" class="survey-a">Ngay sau khi thức dậy & Kéo dài cả ngày</p>
+            </div>
+            <div class="survey-qa-box">
+              <span class="survey-q">Cảm giác khoang miệng (Xerostomia):</span>
+              <p id="dossierSurveySensations" class="survey-a">Khô miệng đặc quánh vào ban đêm, vị đắng kim loại ở cuống họng</p>
+            </div>
+            <div class="survey-qa-box">
+              <span class="survey-q">Tiền sử trào ngược dạ dày (GERD):</span>
+              <p id="dossierSurveyGerd" class="survey-a">Thỉnh thoảng có ợ hơi, trào ngược dịch dạ dày sau bữa tối</p>
+            </div>
+            <div class="survey-qa-box">
+              <span class="survey-q">Thói quen vệ sinh bề mặt lưỡi:</span>
+              <p id="dossierSurveyHabit" class="survey-a">Chỉ dùng lông bàn chải cọ nhẹ qua lưỡi, chưa dùng cây cạo chuyên dụng</p>
+            </div>
+            <div class="survey-qa-box">
+              <span class="survey-q">Mức độ tự ti / Ngại giao tiếp (1 - 10):</span>
+              <p id="dossierSurveyAnxiety" class="survey-a" style="color: var(--brand-700); font-weight: 700;">7 / 10 (Ngại giao tiếp gần với đồng nghiệp)</p>
             </div>
           </div>
 
-          <!-- Question 3 -->
-          <div class="form-group">
-            <label class="form-label">
-              3. Thói quen vệ sinh bề mặt lưỡi hiện tại:
-            </label>
-            <select class="form-select">
-              <option>Chưa từng cạo lưỡi chuyên dụng</option>
-              <option selected>Chỉ dùng lông bàn chải chải nhẹ qua lưỡi</option>
-              <option>Dùng cây cạo lưỡi kim loại/nhựa mỗi ngày</option>
-              <option>Chỉ súc nước muối sinh lý</option>
-            </select>
-          </div>
-
-          <!-- Question 4 -->
-          <div class="form-group">
-            <label class="form-label">
-              4. Mức độ tự ti / ảnh hưởng giao tiếp (Thang điểm 1 - 10):
-            </label>
-            <div style="display: flex; justify-content: space-between; font-size: 0.625rem; color: #94a3b8; padding: 0 2px;">
-              <span>Ít ảnh hưởng (1)</span>
-              <span>Ngại giao tiếp gần (5)</span>
-              <span>Rất căng thẳng, đeo khẩu trang liên tục (10)</span>
+          <!-- PANEL 2: Ảnh cặn lưỡi -->
+          <div id="dossierPanel_photo" class="hidden" style="display: none; flex-direction: column; gap: 0.65rem;">
+            <div class="clinical-photo-viewer">
+              <img id="dossierPhotoImg" src="" alt="Ảnh cặn lưỡi">
+              <span style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.75); color: var(--brand-300); font-size: 0.625rem; padding: 0.2rem 0.5rem; border-radius: 4px;">
+                Vị trí: <span id="dossierPhotoAngle">Mặt lưng lưỡi</span>
+              </span>
             </div>
-            <input type="range" min="1" max="10" value="7" class="form-range">
+
+            <div style="background-color: var(--brand-50); border: 1px solid var(--brand-200); border-radius: 12px; padding: 0.75rem;">
+              <span style="font-size: 0.6875rem; font-weight: 700; color: var(--brand-900);">Màng sinh học (Winkel Tongue Coating Index):</span>
+              <p id="dossierWinkelIndex" style="font-size: 0.75rem; color: var(--brand-800); font-weight: 600; margin-top: 0.2rem;">
+                4 / 12 (Tập trung 1/3 sau lưỡi)
+              </p>
+            </div>
+
+            <div class="survey-qa-box">
+              <span class="survey-q">Mô tả của bệnh nhân khi chụp:</span>
+              <p id="dossierPatientNote" class="survey-a" style="font-style: italic; color: #475569;">
+                Rêu trắng vàng vào buổi sáng, cảm giác miệng khô và hơi đắng sau khi thức dậy.
+              </p>
+            </div>
           </div>
 
-          <!-- Medical psychological note -->
-          <div style="padding: 0.75rem; background-color: var(--amber-50); border: 1px solid var(--amber-100); border-radius: 12px; color: var(--amber-900); font-size: 0.6875rem; display: flex; gap: 0.5rem; align-items: flex-start;">
-            <i data-lucide="heart-pulse" style="width: 16px; height: 16px; color: var(--amber-700); flex-shrink: 0; margin-top: 2px;"></i>
-            <span>Bác sĩ Đức sẽ dựa vào kết quả này để lên phác đồ kiểm soát vi khuẩn kỵ khí sinh khí VSC và bảo toàn hệ vi sinh có lợi cho bạn.</span>
+          <!-- PANEL 3: Thuốc & Súc miệng -->
+          <div id="dossierPanel_meds" class="hidden" style="display: none; flex-direction: column; gap: 0.65rem;">
+            <div class="survey-qa-box">
+              <span class="survey-q">Thuốc điều trị đang dùng (Nguy cơ giảm tiết nước bọt):</span>
+              <p id="dossierMedsPrescription" class="survey-a">Loratadine 10mg (thuốc kháng dị ứng uống hàng ngày)</p>
+            </div>
+            <div class="survey-qa-box">
+              <span class="survey-q">Nước súc miệng đang dùng:</span>
+              <p id="dossierMedsMouthwash" class="survey-a">Nước súc miệng thông thường chứa cồn 12% (dùng 2 lần/ngày)</p>
+            </div>
+          </div>
+
+          <!-- Khung Bác sĩ ra phác đồ: Thiết kế thẻ đơn thuốc điện tử chuyên nghiệp -->
+          <div class="doctor-prescription-card">
+            <!-- Header của thẻ phác đồ -->
+            <div class="dpc-order-header">
+              <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <i data-lucide="stethoscope" style="width: 14px; height: 14px; color: var(--brand-700);"></i>
+                <span class="dpc-order-title">Chẩn đoán & Phác đồ điều trị</span>
+              </div>
+              <span class="badge badge-teal" style="font-size: 0.625rem;">BS. Nguyễn Minh Đức</span>
+            </div>
+
+            <!-- Dãy phím tắt điền nhanh phác đồ mẫu (Rất tiện lợi trên Mobile) -->
+            <div class="prescription-quick-chips">
+              <button type="button" onclick="appendPrescriptionTemplate('halimeter')" class="rx-chip">
+                + Đo Halimeter lúc 14:30
+              </button>
+              <button type="button" onclick="appendPrescriptionTemplate('scraper')" class="rx-chip">
+                + Cạo lưỡi 2 lần/ngày
+              </button>
+              <button type="button" onclick="appendPrescriptionTemplate('rinse')" class="rx-chip">
+                + Súc miệng kẽm diệt VSC
+              </button>
+            </div>
+
+            <!-- Ô nhập phác đồ được thiết kế mượt mà, không resize thô -->
+            <div class="prescription-input-wrap">
+              <textarea id="doctorOrderInput" class="prescription-textarea" rows="3" placeholder="Nhập chỉ định lâm sàng, phác đồ điều trị hoặc lời dặn cho bệnh nhân..."></textarea>
+            </div>
+
+            <!-- Footer ghi chú gửi tức thì -->
+            <div class="dpc-order-footer">
+              <i data-lucide="shield-check" style="width: 12px; height: 12px; color: var(--emerald-600);"></i>
+              <span>Phác đồ sẽ gửi tức thời tới điện thoại bệnh nhân</span>
+            </div>
           </div>
         </div>
 
-        <!-- Footer -->
+        <!-- Footer Modal: 1 Nút hành động duy nhất, toàn chiều ngang (Đã có nút X ở header) -->
         <div class="modal-footer">
-          <button onclick="closeFormModal()" class="btn btn-primary btn-full">
-            Lưu phiếu khảo sát
+          <button onclick="submitDoctorOrder()" class="btn btn-primary btn-full" style="height: 44px;">
+            <i data-lucide="send" style="width: 15px; height: 15px;"></i>
+            <span>Duyệt đơn & Gửi phác đồ điều trị</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 4. HISTORY MODAL / TAB VIEW -->
-    <div id="historyModal" class="modal-overlay hidden">
+    <!-- MODAL KHẢO SÁT TIỀN LÂM SÀNG (DYNAMIC QUESTIONNAIRE GỌN GÀNG CHO NGƯỜI DÂN) -->
+    <div id="formModal" class="modal-overlay hidden" style="display: none;">
+      <div class="modal-content quiz-modal-content">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-header__title">Khảo sát hơi thở</h3>
+            <p style="font-size: 0.625rem; color: #64748b; margin-top: 0.15rem;">Trả lời vài câu ngắn để chuẩn bị trước khi khám</p>
+          </div>
+          <button onclick="closeFormModal()" class="btn-icon" style="width: 1.85rem; height: 1.85rem;" title="Đóng">
+            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+          </button>
+        </div>
+        <div class="modal-body quiz-modal-body">
+          <!-- Thanh bước động (không cố định số câu) -->
+          <div id="surveyProgressHeader" style="margin-bottom: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span id="surveyStepBadge" style="font-size: 0.75rem; font-weight: 700; color: var(--brand-700);">Câu hỏi 1</span>
+              <span id="surveyBranchBadge" class="badge badge-teal" style="font-size: 0.625rem;">Khảo sát nhanh</span>
+            </div>
+            <div class="survey-progress-bar-wrap">
+              <div id="surveyProgressBar" class="survey-progress-fill" style="width: 35%;"></div>
+            </div>
+          </div>
+
+          <!-- Dynamic Container -->
+          <div id="dynamicSurveyContainer">
+            <!-- Được render động từ app.js -->
+          </div>
+        </div>
+        <div class="modal-footer quiz-modal-footer" id="surveyModalFooter">
+          <button id="surveyBackBtn" type="button" onclick="handleSurveyBack()" class="quiz-btn-back">
+            <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
+            <span>Quay lại</span>
+          </button>
+          <button id="surveyActionBtn" type="button" onclick="handleSurveyActionClick()" class="quiz-btn-action" disabled>
+            <span>Tiếp tục</span>
+            <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL LỊCH SỬ NỘP -->
+    <div id="historyModal" class="modal-overlay hidden" style="display: none;">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="modal-header__info">
-            <div class="icon-box icon-box--teal" style="width: 2rem; height: 2rem; border-radius: 8px;">
-              <i data-lucide="history" style="width: 16px; height: 16px;"></i>
-            </div>
-            <div>
-              <h3 class="modal-header__title">Lịch sử đánh giá vi sinh & cặn lưỡi</h3>
-              <p class="modal-header__sub">Mã hồ sơ: #VSC-3184</p>
-            </div>
-          </div>
-          <button onclick="closeHistoryModal()" class="btn-icon" style="width: 2rem; height: 2rem; border-radius: 9999px;">
-            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+          <h3 class="modal-header__title">Lịch sử đánh giá vi sinh & khí VSC</h3>
+          <button onclick="closeHistoryModal()" class="btn-icon" style="width: 1.85rem; height: 1.85rem;">
+            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
           </button>
         </div>
-
-        <div class="modal-body" id="historyListContainer">
-          <!-- Item 1 -->
-          <div class="history-item">
-            <div class="history-item__thumb">
-              <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=150&q=80" alt="Tongue coating sample">
+        <div class="modal-body">
+          <div style="padding: 0.75rem; background-color: #f8fafc; border: 1px solid var(--calm-border); border-radius: 12px; display: flex; align-items: center; gap: 0.65rem;">
+            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=150&q=80" alt="Lưỡi" style="width: 3rem; height: 3rem; border-radius: 8px; object-fit: cover;">
+            <div style="flex: 1;">
+              <span style="font-size: 0.75rem; font-weight: 700;">Ảnh mặt lưng lưỡi</span>
+              <p style="font-size: 0.6875rem; color: #64748b;">Chỉ số rêu: 4/12 Winkel Index</p>
+              <span style="font-size: 0.625rem; color: #94a3b8;">09:22 • Hôm nay</span>
             </div>
-            <div class="history-item__content">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">Ảnh đáy lưng lưỡi (Dorsal Tongue)</span>
-                <span class="badge badge-emerald">Đã lưu trữ</span>
-              </div>
-              <p style="font-size: 0.6875rem; color: #475569; margin-top: 0.125rem;">Chỉ số rêu sơ bộ: Mảng phủ dày vùng 1/3 sau lưỡi</p>
-              <div class="history-item__meta-row">
-                <span>09:22 • Hôm nay</span>
-                <span style="color: var(--brand-700); font-weight: 600;">Chờ đối chiếu Halimeter</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Item 2 -->
-          <div class="history-item">
-            <div class="icon-box icon-box--teal" style="width: 3.5rem; height: 3.5rem; border-radius: 14px;">
-              <i data-lucide="file-check-2" style="width: 24px; height: 24px;"></i>
-            </div>
-            <div class="history-item__content">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">Phiếu khảo sát thói quen & Xerostomia</span>
-                <span class="badge badge-teal">Hoàn thành</span>
-              </div>
-              <p style="font-size: 0.6875rem; color: #475569; margin-top: 0.125rem;">Triệu chứng: Khô miệng ban đêm + Vị đắng cuống họng</p>
-              <div class="history-item__meta-row">
-                <span>09:15 • Hôm nay</span>
-                <span>Google Form đồng bộ</span>
-              </div>
-            </div>
+            <span class="badge badge-emerald">Đã nộp</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Notification Toast Message Component -->
-    <div id="toastMessage" class="toast hidden">
-      <i data-lucide="check-circle-2" style="width: 16px; height: 16px; color: var(--brand-400);"></i>
-      <span id="toastText">Thông báo đã cập nhật</span>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+      <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: var(--brand-400);"></i>
+      <span id="toastMsg">Thông báo</span>
     </div>
 
   </div>
 
-  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <!-- Pure JavaScript Controller -->
   <script src="app.js"></script>
 </body>
 </html>
