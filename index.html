@@ -16,8 +16,6 @@
   <!-- Pure CSS Mobile Stylesheet -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="patient.css">
-  <link rel="stylesheet" href="patient-history.css">
-  <link rel="stylesheet" href="patient-navigation.css">
 </head>
 <body>
 
@@ -38,8 +36,7 @@
     <!-- ==========================================================================
          MÀN HÌNH 1: ĐĂNG NHẬP & ĐĂNG KÝ (SCREEN-AUTH)
          ========================================================================== -->
-    <div id="screen-auth" class="app-screen hidden" style="display: none;">
-      <div class="auth-topbar"><button id="authBackButton" class="pf-header-button" onclick="cancelSignIn()" aria-label="Quay lại"><i data-lucide="arrow-left"></i></button></div>
+    <div id="screen-auth" class="app-screen">
       <div class="auth-scroll-body">
         <!-- Logo & App Name -->
         <div class="auth-header">
@@ -133,20 +130,21 @@
     <!-- ==========================================================================
          MÀN HÌNH 2: GIAO DIỆN BỆNH NHÂN (SCREEN-PATIENT)
          ========================================================================== -->
-    <div id="screen-patient" class="app-screen">
-      <header class="pf-header">
-        <button id="patientMenuButton" class="pf-header-button" onclick="togglePatientMenu('navigation')" aria-label="Mở menu chức năng" aria-haspopup="menu" aria-controls="patientNavigationMenu" aria-expanded="false"><i data-lucide="menu"></i></button>
-        <div class="pf-brand"><div><p>BREATH CARE</p><h1 id="patientScreenTitle">Trang chủ</h1></div></div>
-        <button id="patientProfileButton" class="pf-header-button" onclick="togglePatientMenu('profile')" aria-label="Mở menu hồ sơ" aria-haspopup="menu" aria-controls="patientProfileMenu" aria-expanded="false"><i data-lucide="user-round"></i></button>
-        <div id="patientNavigationMenu" class="pf-header-menu pf-header-menu--left" role="menu" aria-labelledby="patientMenuButton" hidden></div>
-        <div id="patientProfileMenu" class="pf-header-menu pf-header-menu--right" role="menu" aria-labelledby="patientProfileButton" hidden></div>
-      </header>
+    <div id="screen-patient" class="app-screen hidden" style="display: none;">
+      <header class="pf-header"><div class="pf-brand"><span class="pf-brand-mark"><i data-lucide="activity"></i></span><div><p>BREATH CARE</p><h1 id="patientScreenTitle">Trang chủ</h1></div></div></header>
       <main id="patientContent" class="pf-content" aria-label="Nội dung ứng dụng"></main>
       <nav class="pf-bottom-nav" aria-label="Điều hướng chính">
+<<<<<<< HEAD
+        <button data-patient-tab="home" onclick="renderPatientTab('home')" aria-label="Trang chủ" title="Trang chủ"><i data-lucide="house" aria-hidden="true"></i></button>
+        <button data-patient-tab="diagnosis" onclick="renderPatientTab('diagnosis')" aria-label="Chẩn đoán" title="Chẩn đoán"><i data-lucide="scan-line" aria-hidden="true"></i></button>
+        <button data-patient-tab="history" onclick="returnToPatientHistory()" aria-label="Lịch sử" title="Lịch sử"><i data-lucide="history" aria-hidden="true"></i></button>
+        <button data-patient-tab="profile" onclick="renderPatientTab('profile')" aria-label="Hồ sơ cá nhân" title="Hồ sơ cá nhân"><i data-lucide="user-round" aria-hidden="true"></i></button>
+=======
         <button data-patient-tab="home" onclick="renderPatientTab('home')"><i data-lucide="house"></i><span>Trang chủ</span></button>
         <button data-patient-tab="diagnosis" onclick="renderPatientTab('diagnosis')"><i data-lucide="scan-line"></i><span>Chẩn đoán</span></button>
-        <button data-patient-tab="history" onclick="returnToPatientHistory()"><i data-lucide="history"></i><span>Lịch sử</span></button>
+        <button data-patient-tab="history" onclick="renderPatientTab('history')"><i data-lucide="history"></i><span>Lịch sử</span></button>
         <button data-patient-tab="profile" onclick="renderPatientTab('profile')"><i data-lucide="user-round"></i><span>Hồ sơ cá nhân</span></button>
+>>>>>>> parent of 7678358 (up)
       </nav>
     </div>
 
@@ -572,8 +570,6 @@
   <script src="camera-quality.js"></script>
   <script src="patient-camera.js"></script>
   <script src="patient-results.js"></script>
-  <script src="patient-history.js"></script>
-  <script src="patient-navigation.js"></script>
   <script src="patient.js"></script>
 </body>
 </html>

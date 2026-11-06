@@ -42,7 +42,6 @@ function renderCaptureTestShortcut() {
   return `<button class="pf-secondary" onclick="bypassTongueCaptureForTest()" aria-label="Bỏ qua chụp ảnh để test">Bỏ qua để test</button>`;
 }
 function bypassTongueCaptureForTest() {
-  if (!requirePatientSession('diagnosis')) return;
   stopPatientCamera();
   const canvas = document.createElement('canvas');
   canvas.width = 300; canvas.height = 400;
@@ -85,7 +84,6 @@ function acceptTongueCaptureGuide() {
   openTongueCamera();
 }
 async function openTongueCamera() {
-  if (!requirePatientSession('diagnosis')) return;
   const draft = patientFlow.draft;
   if (!draft?.guidanceAccepted) return;
   stopPatientCamera();
