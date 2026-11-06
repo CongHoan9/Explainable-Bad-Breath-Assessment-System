@@ -32,95 +32,50 @@ function destroyResultCarousel() {
   resultScrollFrame = null;
 }
 function attachResultCarousel() {
-    const carousel = document.getElementById('resultCarousel');
-    if (!carousel) return;
-    const index = patientFlow.resultSlide || 0;
-    
-    const panels = carousel.querySelectorAll('.pf-result-panel');
-    if (panels[index]) {
-        // Lấy thẳng tọa độ thực tế từ DOM, triệt tiêu hoàn toàn sai số làm tròn pixel
-        carousel.scrollLeft = panels[index].offsetLeft - carousel.clientLeft;
-    }
-    
-    syncResultSlide(index);
-    
-    if (!resultResizeObserver) {
-        resultResizeObserver = new ResizeObserver(() => {
-            const currentPanels = carousel.querySelectorAll('.pf-result-panel');
-            const curIndex = patientFlow.resultSlide || 0;
-            if (currentPanels[curIndex]) {
-                carousel.scrollLeft = currentPanels[curIndex].offsetLeft - carousel.clientLeft;
-            }
-        });
-        resultResizeObserver.observe(carousel);
-    }
+  const carousel = document.getElementById('resultCarousel');
+  if (!carousel) return;
+  const index = patientFlow.resultSlide || 0;
+  carousel.scrollLeft = index * carousel.clientWidth;
+  syncResultSlide(index);
+  resultResizeObserver = new ResizeObserver(() => {
+    carousel.scrollLeft = (patientFlow.resultSlide || 0) * carousel.clientWidth;
+  });
+  resultResizeObserver.observe(carousel);
 }
-
 function syncResultSlide(index) {
-    patientFlow.resultSlide = Math.max(0, Math.min(2, index));
-    document.querySelectorAll('.pf-result-tabs button').forEach((tab, current) => {
-        const active = current === patientFlow.resultSlide;
-        tab.setAttribute('aria-selected', String(active));
-        tab.tabIndex = active ? 0 : -1;
-        const panel = document.getElementById(`resultPanel${current}`);
-        if (panel) {
-            panel.inert = !active;
-            panel.setAttribute('aria-hidden', String(!active));
-        }
-    });
+  patientFlow.resultSlide = Math.max(0, Math.min(2, index));
+  document.querySelectorAll('.pf-result-tabs button').forEach((tab, current) => {
+    const active = current === patientFlow.resultSlide;
+    tab.setAttribute('aria-selected', String(active));
+    tab.tabIndex = active ? 0 : -1;
+    const panel = document.getElementById(`resultPanel${current}`);
+    panel.inert = !active;
+    panel.setAttribute('aria-hidden', String(!active));
+  });
 }
-
 function queueResultSlideSync() {
-    if (resultScrollFrame !== null) return;
-    resultScrollFrame = requestAnimationFrame(() => {
-        resultScrollFrame = null;
-        const carousel = document.getElementById('resultCarousel');
-        const panels = carousel?.querySelectorAll('.pf-result-panel');
-        if (!carousel || !panels || panels.length === 0) return;
-        
-        // Tự động tìm card có vị trí gần nhất với điểm đang scroll để đồng bộ tab chính xác
-        let closestIndex = 0;
-        let minDiff = Infinity;
-        const scrollLeft = carousel.scrollLeft;
-        
-        panels.forEach((panel, idx) => {
-            const diff = Math.abs((panel.offsetLeft - carousel.clientLeft) - scrollLeft);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closestIndex = idx;
-            }
-        });
-        
-        syncResultSlide(closestIndex);
-    });
-}
-
-function goResultSlide(index) {
+  if (resultScrollFrame !== null) return;
+  resultScrollFrame = requestAnimationFrame(() => {
+    resultScrollFrame = null;
     const carousel = document.getElementById('resultCarousel');
-    const panels = carousel?.querySelectorAll('.pf-result-panel');
-    if (!carousel || !panels || panels.length === 0) return;
-    
-    index = Math.max(0, Math.min(panels.length - 1, index));
-    const targetPanel = panels[index];
-    if (!targetPanel) return;
-    
-    carousel.scrollTo({
-        left: targetPanel.offsetLeft - carousel.clientLeft,
-        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
-    });
+    if (carousel?.clientWidth) syncResultSlide(Math.round(carousel.scrollLeft / carousel.clientWidth));
+  });
 }
-
+function goResultSlide(index) {
+  const carousel = document.getElementById('resultCarousel');
+  if (!carousel) return;
+  index = Math.max(0, Math.min(2, index));
+  carousel.scrollTo({ left: index * carousel.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+}
 function handleResultSlideKey(event) {
-    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
-    event.preventDefault();
-    goResultSlide((patientFlow.resultSlide || 0) + (event.key === 'ArrowRight' ? 1 : -1));
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+  event.preventDefault();
+  goResultSlide((patientFlow.resultSlide || 0) + (event.key === 'ArrowRight' ? 1 : -1));
 }
-
 function toggleAssessmentOverlay(show) {
-    const panel = document.getElementById('resultPanel1');
-    const scroll = panel?.scrollTop || 0;
-    patientFlow.overlay = show;
-    renderPatientTab(patientFlow.tab);
-    const targetPanel = document.getElementById('resultPanel1');
-    if (targetPanel) targetPanel.scrollTop = scroll;
+  const panel = document.getElementById('resultPanel1');
+  const scroll = panel?.scrollTop || 0;
+  patientFlow.overlay = show;
+  renderPatientTab(patientFlow.tab);
+  document.getElementById('resultPanel1').scrollTop = scroll;
 }
