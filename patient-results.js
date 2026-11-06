@@ -32,15 +32,26 @@ function destroyResultCarousel() {
   resultScrollFrame = null;
 }
 function attachResultCarousel() {
-  const carousel = document.getElementById('resultCarousel');
-  if (!carousel) return;
-  const index = patientFlow.resultSlide || 0;
-  carousel.scrollLeft = index * carousel.clientWidth;
-  syncResultSlide(index);
-  resultResizeObserver = new ResizeObserver(() => {
-    carousel.scrollLeft = (patientFlow.resultSlide || 0) * carousel.clientWidth;
-  });
-  resultResizeObserver.observe(carousel);
+    const carousel = document.getElementById('resultCarousel');
+    if (!carousel) return;
+    const index = patientFlow.resultSlide || 0;
+    
+    const panel = carousel.querySelector('.pf-result-panel');
+    if (panel) {
+        const slideWidth = panel.offsetWidth + 15;
+        carousel.scrollLeft = index * slideWidth;
+    }
+    syncResultSlide(index);
+    if (!resultResizeObserver) {
+        resultResizeObserver = new ResizeObserver(() => {
+            const currentPanel = carousel.querySelector('.pf-result-panel');
+            if (currentPanel) {
+                const slideWidth = currentPanel.offsetWidth + 15;
+                carousel.scrollLeft = (patientFlow.resultSlide || 0) * slideWidth;
+            }
+        });
+        resultResizeObserver.observe(carousel);
+    }
 }
 function syncResultSlide(index) {
   patientFlow.resultSlide = Math.max(0, Math.min(2, index));
@@ -54,18 +65,30 @@ function syncResultSlide(index) {
   });
 }
 function queueResultSlideSync() {
-  if (resultScrollFrame !== null) return;
-  resultScrollFrame = requestAnimationFrame(() => {
-    resultScrollFrame = null;
-    const carousel = document.getElementById('resultCarousel');
-    if (carousel?.clientWidth) syncResultSlide(Math.round(carousel.scrollLeft / carousel.clientWidth));
-  });
+    if (resultScrollFrame !== null) return;
+    resultScrollFrame = requestAnimationFrame(() => {
+        resultScrollFrame = null;
+        const carousel = document.getElementById('resultCarousel');
+        const panel = carousel?.querySelector('.pf-result-panel');
+        if (carousel && panel) {
+            const slideWidth = panel.offsetWidth + 15;
+            const activeIndex = Math.round(carousel.scrollLeft / slideWidth);
+            syncResultSlide(activeIndex);
+        }
+    });
 }
 function goResultSlide(index) {
-  const carousel = document.getElementById('resultCarousel');
-  if (!carousel) return;
-  index = Math.max(0, Math.min(2, index));
-  carousel.scrollTo({ left: index * carousel.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    const carousel = document.getElementById('resultCarousel');
+    const panel = carousel?.querySelector('.pf-result-panel');
+    if (!carousel || !panel) return;
+    
+    index = Math.max(0, Math.min(2, index));
+    const slideWidth = panel.offsetWidth + 15;
+    
+    carousel.scrollTo({
+        left: index * slideWidth,
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
+    });
 }
 function handleResultSlideKey(event) {
   if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
