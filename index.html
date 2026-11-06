@@ -15,6 +15,7 @@
   
   <!-- Pure CSS Mobile Stylesheet -->
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="patient.css">
 </head>
 <body>
 
@@ -43,7 +44,7 @@
             <i data-lucide="activity" style="width: 1.85rem; height: 1.85rem;"></i>
           </div>
           <h1 class="auth-title">Explainable Bad Breath Assessment System</h1>
-          <p class="auth-sub">Hệ thống giải thích & sàng lọc vi sinh khoang miệng tiền lâm sàng</p>
+          <p class="auth-sub">Chụp ảnh lưỡi · Đánh giá hơi thở · Giải thích kết quả</p>
         </div>
 
         <!-- Auth Tabs: Đăng nhập / Đăng ký -->
@@ -130,185 +131,13 @@
          MÀN HÌNH 2: GIAO DIỆN BỆNH NHÂN (SCREEN-PATIENT)
          ========================================================================== -->
     <div id="screen-patient" class="app-screen hidden" style="display: none;">
-      <!-- Patient Top Header: Gọn gàng, ĐÃ BỎ NÚT ĐĂNG XUẤT THỪA VÌ ĐÃ CÓ Ở BOTTOM NAV -->
-      <header class="app-header">
-        <div class="patient-profile">
-          <div class="patient-avatar-wrap">
-            <div class="patient-avatar">
-              <div id="displayPatientAvatar" class="patient-avatar__inner">TT</div>
-            </div>
-            <span class="online-dot"></span>
-          </div>
-          <div>
-            <div style="display: flex; align-items: center; gap: 0.35rem;">
-              <h2 id="displayPatientName" class="patient-name">Trần Tuấn Anh</h2>
-              <span class="badge badge-teal">Bệnh nhân</span>
-            </div>
-            <p id="displayPatientRecord" class="patient-meta">
-              <i data-lucide="shield-check" style="width: 12px; height: 12px; color: var(--brand-600);"></i>
-              <span>#VSC-3184</span>
-            </p>
-          </div>
-        </div>
-
-        <!-- Chỉ giữ 1 nút thông báo duy nhất, cực kỳ thoáng đãng -->
-        <button onclick="showToast('Bạn có lịch hẹn đo khí Halimeter lúc 14:30')" class="btn-icon" title="Thông báo">
-          <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
-        </button>
-      </header>
-
-      <!-- Patient Scrollable Content -->
-      <div class="screen-scroll-body">
-        <!-- Banner Lịch Khám với Bác sĩ -->
-        <section class="consultation-banner">
-          <div class="consultation-banner__header">
-            <div class="consultation-tag-live">
-              <span style="width: 6px; height: 6px; border-radius: 9999px; background-color: var(--brand-400);"></span>
-              <span>Đo khí Halimeter • 14:30</span>
-            </div>
-            <span style="font-size: 0.6875rem; color: #fde68a; font-weight: 600;">Còn 2h 15m</span>
-          </div>
-
-          <div class="consultation-doctor-card">
-            <div class="doctor-avatar-box">
-              <i data-lucide="activity" style="width: 22px; height: 22px;"></i>
-            </div>
-            <div>
-              <h3 style="font-size: 0.875rem; font-weight: 700;">ThS. BS Nguyễn Minh Đức</h3>
-              <p style="font-size: 0.6875rem; color: #cbd5e1; margin-top: 0.1rem;">Vi sinh Khoang miệng & Điều trị Hơi thở</p>
-              <p style="font-size: 0.65rem; color: #5eead4; margin-top: 0.2rem; display: flex; align-items: center; gap: 0.25rem;">
-                <i data-lucide="map-pin" style="width: 11px; height: 11px;"></i> Phòng khám 204
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Thanh tiến trình tiền lâm sàng -->
-        <section class="card" style="padding: 0.875rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-            <div style="display: flex; align-items: center; gap: 0.4rem;">
-              <i data-lucide="clipboard-list" style="width: 15px; height: 15px; color: var(--brand-600);"></i>
-              <span style="font-size: 0.75rem; font-weight: 700;">Chuẩn bị tiền lâm sàng</span>
-            </div>
-            <span id="userProgressBadge" class="badge badge-teal">1 / 3 Hoàn tất</span>
-          </div>
-          <div class="progress-track">
-            <div id="userProgressBar" class="progress-fill" style="width: 33.3%;"></div>
-          </div>
-        </section>
-
-        <!-- 3 Bước quy trình chuẩn bị (Thiết kế chuẩn: 1 vùng Header và 1 vùng Nội dung) -->
-        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <!-- Bước 1: Khảo sát thói quen & Yếu tố nguy cơ -->
-          <div class="card step-card">
-            <!-- Vùng Header: Icon vuông + Tên bước + Thẻ trạng thái -->
-            <div class="step-card__header">
-              <div class="icon-box icon-box--emerald">
-                <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
-              </div>
-              <h4 class="step-card__title">Bước 1: Khảo sát thói quen & Yếu tố nguy cơ</h4>
-              <span class="badge badge-emerald">Đã lưu</span>
-            </div>
-
-            <!-- Vùng Nội dung: Ở phía dưới, rộng 100% -->
-            <div class="step-card__body">
-              <p class="step-card__desc">Đã khai báo khô miệng (Xerostomia), thời điểm mùi và trào ngược dạ dày (GERD).</p>
-              <div class="step-card__actions">
-                <button onclick="openFormModal()" class="btn btn-secondary btn-full" style="height: 40px;">
-                  <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
-                  <span>Xem lại phiếu trả lời</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bước 2: Chụp ảnh cặn lưỡi -->
-          <div class="card step-card step-card--highlight">
-            <!-- Vùng Header: Icon vuông + Tên bước + Thẻ trạng thái -->
-            <div class="step-card__header">
-              <div class="icon-box icon-box--teal">
-                <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
-              </div>
-              <h4 class="step-card__title">Bước 2: Chụp cặn rêu lưỡi & Hốc amidan</h4>
-              <span id="step2StatusBadge" class="badge badge-amber">Cần chụp trước</span>
-            </div>
-
-            <!-- Vùng Nội dung: Ở phía dưới, rộng 100% -->
-            <div class="step-card__body">
-              <p class="step-card__desc">Khung elip giải phẫu giúp cố định đáy lưỡi để bác sĩ tính chỉ số Winkel Index.</p>
-
-              <!-- Thumbnail nếu đã chụp -->
-              <div id="userCapturedThumbBox" class="photo-preview-thumb-box hidden" style="display: none;">
-                <div style="display: flex; align-items: center; gap: 0.6rem;">
-                  <img id="userCapturedImg" src="" alt="Thumbnail">
-                  <div>
-                    <p style="font-size: 0.75rem; font-weight: 700; color: #0f172a; margin: 0;">Ảnh mặt lưng lưỡi đạt chuẩn</p>
-                    <p style="font-size: 0.625rem; color: var(--emerald-600); font-weight: 600; margin-top: 2px;">1080p • Đã căn chỉnh viền gai lưỡi</p>
-                  </div>
-                </div>
-                <button onclick="openCameraModal()" class="btn btn-secondary" style="height: 32px; padding: 0 0.65rem; font-size: 0.6875rem;">Chụp lại</button>
-              </div>
-
-              <!-- Nút hành động chụp ảnh: Rộng 100%, có background rõ ràng, border, cao 40px bằng nút Bước 1 -->
-              <div class="step-card__actions">
-                <button onclick="openCameraModal()" class="btn btn-primary btn-full" style="height: 40px;">
-                  <i data-lucide="camera" style="width: 15px; height: 15px;"></i>
-                  <span>Mở Camera Căn Chỉnh Giải Phẫu</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bước 3: Lịch sử đo khí Halimeter -->
-          <div class="card step-card">
-            <!-- Vùng Header: Icon vuông + Tên bước + Thẻ trạng thái -->
-            <div class="step-card__header">
-              <div class="icon-box icon-box--indigo">
-                <i data-lucide="history" style="width: 18px; height: 18px;"></i>
-              </div>
-              <h4 class="step-card__title">Bước 3: Lịch sử đo khí VSC (Halimeter)</h4>
-              <span class="badge badge-teal">2 lần trước</span>
-            </div>
-
-            <!-- Vùng Nội dung: Ở phía dưới, rộng 100% -->
-            <div class="step-card__body">
-              <div class="halimeter-stat-card">
-                <div>
-                  <span class="halimeter-stat-lbl">Lần đo gần nhất tại phòng khám:</span>
-                  <strong class="halimeter-stat-val">185 ppb</strong>
-                </div>
-                <span class="badge badge-amber">Theo dõi</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Nav Bar của Bệnh nhân -->
-      <nav class="bottom-nav">
-        <button onclick="showToast('Bạn đang ở Trang chủ')" class="nav-item active">
-          <i data-lucide="home" style="width: 18px; height: 18px;"></i>
-          <span>Trang chủ</span>
-        </button>
-
-        <button onclick="openFormModal()" class="nav-item">
-          <i data-lucide="clipboard-list" style="width: 18px; height: 18px;"></i>
-          <span>Khảo sát</span>
-        </button>
-
-        <button onclick="openCameraModal()" class="nav-fab-btn" title="Chụp ảnh cặn lưỡi">
-          <i data-lucide="camera" style="width: 20px; height: 20px;"></i>
-        </button>
-
-        <button onclick="openHistoryModal()" class="nav-item">
-          <i data-lucide="folder-clock" style="width: 18px; height: 18px;"></i>
-          <span>Lịch sử</span>
-        </button>
-
-        <button onclick="logout()" class="nav-item">
-          <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
-          <span>Đăng xuất</span>
-        </button>
+      <header class="pf-header"><div class="pf-brand"><span class="pf-brand-mark"><i data-lucide="activity"></i></span><div><p>BREATH CARE</p><h1 id="patientScreenTitle">Trang chủ</h1></div></div></header>
+      <main id="patientContent" class="pf-content" aria-label="Nội dung ứng dụng"></main>
+      <nav class="pf-bottom-nav" aria-label="Điều hướng chính">
+        <button data-patient-tab="home" onclick="renderPatientTab('home')"><i data-lucide="house"></i><span>Trang chủ</span></button>
+        <button data-patient-tab="diagnosis" onclick="renderPatientTab('diagnosis')"><i data-lucide="scan-line"></i><span>Chẩn đoán</span></button>
+        <button data-patient-tab="history" onclick="renderPatientTab('history')"><i data-lucide="history"></i><span>Lịch sử</span></button>
+        <button data-patient-tab="profile" onclick="renderPatientTab('profile')"><i data-lucide="user-round"></i><span>Hồ sơ cá nhân</span></button>
       </nav>
     </div>
 
@@ -548,56 +377,6 @@
     </div>
 
     <!-- ==========================================================================
-         MÀN HÌNH 4: CAMERA CHỤP CẶN RÊU LƯỠI (SCREEN-CAMERA)
-         ========================================================================== -->
-    <div id="screen-camera" class="camera-screen hidden" style="display: none;">
-      <div class="camera-top-bar">
-        <button onclick="closeCameraModal()" class="btn-icon" style="background: rgba(255,255,255,0.15); border: none; color: #ffffff;" title="Đóng camera">
-          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
-        </button>
-        <div style="text-align: center;">
-          <span style="font-size: 0.6875rem; font-weight: 700; color: var(--brand-300); text-transform: uppercase;">
-            Khung định vị cặn rêu lưỡi
-          </span>
-          <p style="font-size: 0.5625rem; color: #cbd5e1;">Đưa mặt lưng lưỡi vừa khít khung elip</p>
-        </div>
-        <button id="cameraFlashBtn" onclick="toggleFlash()" class="btn-icon" style="background: rgba(255,255,255,0.15); border: none; color: #ffffff;" title="Bật/Tắt đèn flash">
-          <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
-        </button>
-      </div>
-
-      <div class="camera-viewport">
-        <div class="camera-viewfinder-bg">
-          <svg style="width: 14rem; height: 14rem; opacity: 0.18; color: var(--brand-400);" viewBox="0 0 200 200" fill="currentColor">
-            <path d="M100 20 C 50 20, 30 70, 30 110 C 30 155, 60 185, 100 185 C 140 185, 170 155, 170 110 C 170 70, 150 20, 100 20 Z" />
-          </svg>
-        </div>
-
-        <div id="flashOverlay" style="position: absolute; inset: 0; background-color: #ffffff; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;"></div>
-
-        <!-- Khung Elip Giải phẫu -->
-        <div class="anatomical-oval-wireframe">
-          <span style="background-color: rgba(0,0,0,0.7); color: var(--brand-300); font-size: 0.5625rem; padding: 0.15rem 0.5rem; border-radius: 9999px;">
-            Đáy lưỡi (Vùng sinh khí VSC)
-          </span>
-          <div style="width: 2.5rem; height: 2.5rem; border: 1px solid rgba(94, 234, 212, 0.4); border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
-            <div style="width: 5px; height: 5px; background-color: var(--brand-400); border-radius: 9999px;"></div>
-          </div>
-          <span style="background-color: rgba(0,0,0,0.7); color: var(--brand-300); font-size: 0.5625rem; padding: 0.15rem 0.5rem; border-radius: 9999px;">
-            Đầu lưỡi & Viền môi
-          </span>
-        </div>
-      </div>
-
-      <div style="padding: 1.25rem 1rem; background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.85) 70%, transparent 100%); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-        <button onclick="snapPhoto()" class="shutter-btn" title="Chụp ảnh cặn lưỡi">
-          <div class="shutter-btn__core"></div>
-        </button>
-        <span style="font-size: 0.625rem; color: #cbd5e1;">Bấm nút trắng để chụp và gửi Bác sĩ Đức</span>
-      </div>
-    </div>
-
-    <!-- ==========================================================================
          MODAL: XEM ĐẦY ĐỦ GIẤY TỜ BỆNH ÁN NỘP TỚI BÁC SĨ (PATIENT DOSSIER)
          ĐỒNG NHẤT PADDING, VIỀN & HIỂN THỊ ĐẦY ĐỦ TABS
          ========================================================================== -->
@@ -771,73 +550,8 @@
       </div>
     </div>
 
-    <!-- MODAL KHẢO SÁT TIỀN LÂM SÀNG (DYNAMIC QUESTIONNAIRE GỌN GÀNG CHO NGƯỜI DÂN) -->
-    <div id="formModal" class="modal-overlay hidden" style="display: none;">
-      <div class="modal-content quiz-modal-content">
-        <div class="modal-header">
-          <div>
-            <h3 class="modal-header__title">Khảo sát hơi thở</h3>
-            <p style="font-size: 0.625rem; color: #64748b; margin-top: 0.15rem;">Trả lời vài câu ngắn để chuẩn bị trước khi khám</p>
-          </div>
-          <button onclick="closeFormModal()" class="btn-icon" style="width: 1.85rem; height: 1.85rem;" title="Đóng">
-            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-          </button>
-        </div>
-        <div class="modal-body quiz-modal-body">
-          <!-- Thanh bước động (không cố định số câu) -->
-          <div id="surveyProgressHeader" style="margin-bottom: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <span id="surveyStepBadge" style="font-size: 0.75rem; font-weight: 700; color: var(--brand-700);">Câu hỏi 1</span>
-              <span id="surveyBranchBadge" class="badge badge-teal" style="font-size: 0.625rem;">Khảo sát nhanh</span>
-            </div>
-            <div class="survey-progress-bar-wrap">
-              <div id="surveyProgressBar" class="survey-progress-fill" style="width: 35%;"></div>
-            </div>
-          </div>
-
-          <!-- Dynamic Container -->
-          <div id="dynamicSurveyContainer">
-            <!-- Được render động từ app.js -->
-          </div>
-        </div>
-        <div class="modal-footer quiz-modal-footer" id="surveyModalFooter">
-          <button id="surveyBackBtn" type="button" onclick="handleSurveyBack()" class="quiz-btn-back">
-            <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
-            <span>Quay lại</span>
-          </button>
-          <button id="surveyActionBtn" type="button" onclick="handleSurveyActionClick()" class="quiz-btn-action" disabled>
-            <span>Tiếp tục</span>
-            <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL LỊCH SỬ NỘP -->
-    <div id="historyModal" class="modal-overlay hidden" style="display: none;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-header__title">Lịch sử đánh giá vi sinh & khí VSC</h3>
-          <button onclick="closeHistoryModal()" class="btn-icon" style="width: 1.85rem; height: 1.85rem;">
-            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div style="padding: 0.75rem; background-color: #f8fafc; border: 1px solid var(--calm-border); border-radius: 12px; display: flex; align-items: center; gap: 0.65rem;">
-            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=150&q=80" alt="Lưỡi" style="width: 3rem; height: 3rem; border-radius: 8px; object-fit: cover;">
-            <div style="flex: 1;">
-              <span style="font-size: 0.75rem; font-weight: 700;">Ảnh mặt lưng lưỡi</span>
-              <p style="font-size: 0.6875rem; color: #64748b;">Chỉ số rêu: 4/12 Winkel Index</p>
-              <span style="font-size: 0.625rem; color: #94a3b8;">09:22 • Hôm nay</span>
-            </div>
-            <span class="badge badge-emerald">Đã nộp</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Toast Notification -->
-    <div id="toast" class="toast hidden">
+    <div id="toast" class="toast hidden" role="status" aria-live="polite">
       <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: var(--brand-400);"></i>
       <span id="toastMsg">Thông báo</span>
     </div>
@@ -846,5 +560,9 @@
 
   <!-- Pure JavaScript Controller -->
   <script src="app.js"></script>
+  <script src="camera-quality.js"></script>
+  <script src="patient-camera.js"></script>
+  <script src="patient-results.js"></script>
+  <script src="patient.js"></script>
 </body>
 </html>
