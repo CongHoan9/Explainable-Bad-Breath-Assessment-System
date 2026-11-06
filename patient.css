@@ -1649,6 +1649,7 @@
 }
 
 .pf-result-carousel {
+    position: relative;
     display: flex;
     gap: 15px;
     flex: 1;
