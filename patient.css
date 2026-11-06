@@ -1641,6 +1641,7 @@
 
 .pf-content > .pf-result-shell {
     flex: 1;
+    margin: 0 -20px;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -1651,12 +1652,7 @@
 .pf-result-carousel {
     position: relative;
     display: flex;
-    gap: 15px;
     flex: 1;
-    margin-left: -20px;
-    margin-right: -20px;
-    padding-left: 20px;
-    padding-right: 20px;
     min-height: 0;
     overflow-x: auto;
     overflow-y: hidden;
@@ -1681,6 +1677,8 @@
 }
 
 .pf-result-panel > * {
+    margin-left: 20px;
+    width: calc(100% - 40px);
     flex-shrink: 0;
 }
 
