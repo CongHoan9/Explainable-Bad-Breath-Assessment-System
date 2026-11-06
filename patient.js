@@ -26,11 +26,13 @@ function patientStorageKey() { return 'breath-assessments-v1:' + encodeURICompon
 
 function initPatientApp() {
   stopPatientCamera();
-  patientFlow.account = appState.currentUser.username.trim().toLocaleLowerCase('vi');
+  resetPatientHistory();
+  const signedIn = isPatientAuthenticated();
+  patientFlow.account = signedIn ? appState.currentUser.username.trim().toLocaleLowerCase('vi') : '';
   patientFlow.history = [];
-  patientFlow.profile = { name: appState.currentUser.username, phone: appState.currentUser.phone, age: '', gender: '' };
+  patientFlow.profile = { name: signedIn ? appState.currentUser.username : '', phone: signedIn ? appState.currentUser.phone : '', age: '', gender: '' };
   try {
-    const saved = JSON.parse(localStorage.getItem(patientStorageKey()) || 'null');
+    const saved = signedIn ? JSON.parse(localStorage.getItem(patientStorageKey()) || 'null') : null;
     if (saved && Array.isArray(saved.history)) {
       patientFlow.history = saved.history.filter(isValidAssessment).slice(0, 12);
       if (saved.profile && typeof saved.profile === 'object') {
@@ -56,6 +58,7 @@ function isValidAssessment(record) {
     && Number.isFinite(record.brightness) && Number.isFinite(record.createdAt);
 }
 function persistPatientData() {
+  if (!isPatientAuthenticated()) return false;
   try {
     localStorage.setItem(patientStorageKey(), JSON.stringify({ profile: patientFlow.profile, history: patientFlow.history }));
     return true;
@@ -65,6 +68,7 @@ function newAssessmentDraft() {
   return { stage: 'guide', guidanceAccepted: false, photo: '', photoKind: '', brightness: 0, confirmed: false, questionIndex: 0, answers: Array(ASSESSMENT_QUESTIONS.length).fill(null) };
 }
 function startAssessment() {
+  if (!requirePatientSession('diagnosis')) return;
   stopPatientCamera();
   patientFlow.draft = newAssessmentDraft();
   patientFlow.resultId = null;
@@ -74,35 +78,62 @@ function startAssessment() {
   renderPatientTab('diagnosis');
 }
 function renderPatientTab(tab) {
-  if (!['home', 'diagnosis', 'history', 'profile'].includes(tab)) return;
+  if (!['home', 'diagnosis', 'history', 'profile', 'information', 'settings'].includes(tab)) return;
+  if (['diagnosis', 'profile', 'information'].includes(tab) && !requirePatientSession(tab)) return;
+  closePatientMenus();
   if (tab !== 'diagnosis') stopPatientCamera();
   patientFlow.tab = tab;
-  const titles = { home: 'Trang chủ', diagnosis: 'Chẩn đoán', history: 'Lịch sử', profile: 'Hồ sơ cá nhân' };
-  document.getElementById('patientScreenTitle').textContent = titles[tab];
+  const titles = { home: 'Trang chủ', diagnosis: 'Chẩn đoán', history: 'Lịch sử', profile: 'Hồ sơ cá nhân', information: 'Thông tin cá nhân', settings: 'Cài đặt' };
+  const historyDetail = tab === 'history' && Boolean(getHistoryDetailRecord());
+  document.getElementById('patientScreenTitle').textContent = historyDetail ? 'Chi tiết kết quả' : titles[tab];
   document.querySelectorAll('[data-patient-tab]').forEach(button => {
-    const selected = button.dataset.patientTab === tab;
+    const selected = button.dataset.patientTab === (tab === 'information' ? 'profile' : tab);
     button.classList.toggle('active', selected);
     if (selected) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   });
   destroyResultCarousel();
   const content = document.getElementById('patientContent');
-  content.classList.toggle('pf-results-mode', tab === 'diagnosis' && patientFlow.history.some(record => record.id === patientFlow.resultId));
+  content.classList.toggle('pf-results-mode', historyDetail || (tab === 'diagnosis' && patientFlow.history.some(record => record.id === patientFlow.resultId)));
+  content.classList.toggle('pf-history-mode', tab === 'history' && !historyDetail);
   const cameraView = tab === 'diagnosis' && !patientFlow.resultId && patientFlow.draft?.stage === 'camera';
   content.classList.toggle('pf-camera-mode', cameraView);
   document.querySelector('.mobile-device-shell').classList.toggle('is-camera-view', cameraView);
-  content.classList.toggle('pf-stage-mode', tab === 'profile' || (tab === 'diagnosis' && !patientFlow.resultId && !patientFlow.completing));
-  content.innerHTML = ({ home: renderPatientHome, diagnosis: renderAssessment, history: renderPatientHistory, profile: renderPatientProfile })[tab]();
+  content.classList.toggle('pf-stage-mode', tab === 'information' || (tab === 'diagnosis' && !patientFlow.resultId && !patientFlow.completing));
+  content.innerHTML = ({ home: renderPatientHome, diagnosis: renderAssessment, history: renderPatientHistory, profile: renderPatientProfile, information: renderPatientInformation, settings: renderPatientSettings })[tab]();
   content.scrollTop = 0;
+  refreshPatientMenus();
   refreshPatientIcons();
   attachTongueCamera();
   attachResultCarousel();
+  attachPatientHistory();
 }
 function renderPatientHome() {
+  const doctor = appState.currentDoctor;
+  const steps = [['camera', 'Chụp ảnh lưỡi'], ['list-checks', 'Trả lời câu hỏi'], ['chart-no-axes-column', 'Xem kết quả']];
+  return `<div class="pf-home">
+    <section class="pf-hero pf-home-hero" aria-labelledby="homeHeroTitle">
+      <span class="pf-hero-tag">${patientIcon('scan-line')} Đánh giá hơi thở</span>
+      <h2 id="homeHeroTitle">Chẩn đoán hôi miệng</h2>
+      <p>Chụp ảnh lưỡi, trả lời câu hỏi và tìm hiểu mức độ hôi miệng của bạn.</p>
+      <span class="pf-hero-art">${patientIcon('scan-line')}</span>
+      <button class="pf-primary pf-hero-button" onclick="startAssessment()">Bắt đầu chẩn đoán ${patientIcon('arrow-right')}</button>
+    </section>
+    <section class="pf-card pf-home-process" aria-labelledby="homeProcessTitle">
+      <div class="pf-section-title"><h3 id="homeProcessTitle">Quy trình chẩn đoán</h3><span>3 bước</span></div>
+      <ol class="pf-home-steps">${steps.map(([icon, title], index) => `<li><span>${patientIcon(icon)}</span><small>0${index + 1}</small><strong>${title}</strong></li>`).join('')}</ol>
+    </section>
+    <section class="pf-card pf-home-doctor" aria-labelledby="homeDoctorTitle">
+      <div class="pf-section-title"><h3 id="homeDoctorTitle">Bác sĩ</h3>${patientIcon('stethoscope')}</div>
+      <div class="pf-home-doctor__body"><span class="pf-home-doctor__avatar">${patientIcon('user-round')}</span><div><h4>${escapePatientText(doctor.name)}</h4><p>${escapePatientText(doctor.department)}</p><span class="pf-home-doctor__location">${patientIcon('map-pin')}${escapePatientText(doctor.clinicRoom)}</span></div></div>
+    </section>
+  </div>`;
+}
+function renderPatientProfile() {
   const latest = patientFlow.history[0];
-  return `<div class="pf-greeting"><h2>Xin chào, ${escapePatientText(patientFlow.profile.name.split(' ').pop())}</h2></div>
+  return `<div class="pf-greeting"><h2>Xin chào, ${escapePatientText(patientFlow.profile.name.trim().split(/\s+/).pop())}</h2><button class="pf-profile-edit" onclick="renderPatientTab('information')" aria-label="Chỉnh sửa thông tin cá nhân">${patientIcon('user-pen')}</button></div>
     <section class="pf-hero"><h2>Đánh giá hơi thở</h2><p>Chụp ảnh lưỡi và trả lời 5 câu hỏi.</p><button class="pf-primary pf-hero-button" onclick="startAssessment()">Bắt đầu chẩn đoán ${patientIcon('arrow-right')}</button></section>
-    <section><div class="pf-section-title"><h3>Đánh giá gần nhất</h3></div>${latest ? renderHistoryCard(latest) : `<div class="pf-card pf-empty-inline">${patientIcon('clipboard-list')}<div><strong>Chưa có kết quả</strong><p>Bắt đầu chẩn đoán để lưu lần đánh giá đầu tiên.</p></div></div>`}</section>`;
+    ${isPatientAuthenticated() ? `<section><div class="pf-section-title"><h3>Đánh giá gần nhất</h3></div>${latest ? renderHistoryCard(latest) : `<div class="pf-card pf-empty-inline">${patientIcon('clipboard-list')}<div><strong>Chưa có kết quả</strong><p>Bắt đầu chẩn đoán để lưu lần đánh giá đầu tiên.</p></div></div>`}</section>` : ''}`;
 }
 function renderFlowSteps(step) {
   return `<ol class="pf-flow-steps">${['Ảnh lưỡi', 'Câu hỏi', 'Kết quả'].map((text, index) => `<li class="${index + 1 <= step ? 'is-current' : ''}"><span>${index + 1 < step ? '✓' : index + 1}</span>${text}</li>`).join('')}</ol>`;
@@ -159,7 +190,7 @@ function evaluateAssessment(answers) {
 }
 async function completeAssessment() {
   const draft = patientFlow.draft;
-  if (!draft?.confirmed || !draft.photo || draft.answers.includes(null) || patientFlow.completing) return;
+  if (!isPatientAuthenticated() || !draft?.confirmed || !draft.photo || draft.answers.includes(null) || patientFlow.completing) return;
   patientFlow.completing = true;
   renderPatientTab('diagnosis');
   await new Promise(resolve => setTimeout(resolve, 650));
@@ -173,38 +204,24 @@ async function completeAssessment() {
   patientFlow.overlay = true;
   patientFlow.resultSlide = 0;
   const saved = persistPatientData();
-  if (appState.currentScreen === 'screen-patient' && patientFlow.tab !== 'profile') renderPatientTab(patientFlow.tab);
+  if (appState.currentScreen === 'screen-patient' && patientFlow.tab !== 'information') renderPatientTab(patientFlow.tab);
   if (!saved) showToast('Kết quả được giữ trong phiên này. Bộ nhớ trình duyệt hiện không khả dụng.');
 }
 function formatAssessmentDate(timestamp) {
   return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(timestamp);
 }
-function renderHistoryCard(record) {
-  const level = ASSESSMENT_LEVELS[record.level];
-  return `<button class="pf-history-card" onclick="viewAssessment('${record.id}')"><img src="${escapePatientText(record.photo)}" alt="Ảnh lưỡi đã lưu"><div><strong>${level.name}</strong><p>${formatAssessmentDate(record.createdAt)}</p><span>Xem ảnh và giải thích ${patientIcon('arrow-right')}</span></div><span class="pf-history-level" style="--level-color:${level.color};--level-bg:${level.background}">${record.level}<small>/3</small></span></button>`;
-}
-function renderPatientHistory() {
-  return `<div class="pf-intro"><p class="pf-eyebrow">HÀNH TRÌNH CỦA BẠN</p><h2>Lịch sử đánh giá</h2><p>${patientFlow.history.length ? `${patientFlow.history.length} lần đánh giá gần nhất · Lưu trên thiết bị này` : 'Theo dõi từng thay đổi nhỏ của hơi thở.'}</p></div>${patientFlow.history.length ? `<div class="pf-history-list">${patientFlow.history.map(renderHistoryCard).join('')}</div><p class="pf-muted">Lưu tối đa 12 lần đánh giá gần nhất trên trình duyệt này.</p>` : `<div class="pf-empty-state">${patientIcon('history')}<h3>Chưa có lần đánh giá nào</h3><p>Hoàn tất chụp ảnh và bộ câu hỏi để lưu kết quả đầu tiên.</p><button class="pf-primary" onclick="startAssessment()">Bắt đầu chẩn đoán ${patientIcon('arrow-right')}</button></div>`}`;
-}
-function viewAssessment(id) {
-  if (!patientFlow.history.some(record => record.id === id)) return;
-  stopPatientCamera();
-  patientFlow.resultId = id;
-  patientFlow.overlay = true;
-  patientFlow.resultSlide = 0;
-  renderPatientTab('diagnosis');
-}
-function renderPatientProfile() {
+function renderPatientInformation() {
   const profile = patientFlow.profile;
   const body = `<form id="patientProfileForm" class="pf-profile-form" onsubmit="savePatientProfile(event)"><label>Họ và tên<input id="profileName" name="name" value="${escapePatientText(profile.name)}" required maxlength="80" autocomplete="name"></label><label>Số điện thoại<input id="profilePhone" name="phone" type="tel" value="${escapePatientText(profile.phone)}" maxlength="20" autocomplete="tel"></label><div class="pf-two-actions"><label>Tuổi<input id="profileAge" name="age" type="number" min="1" max="120" step="1" value="${escapePatientText(profile.age)}"></label><label>Giới tính<select id="profileGender" name="gender">${[['', 'Chưa chọn'], ['Nam', 'Nam'], ['Nữ', 'Nữ'], ['Khác', 'Khác']].map(([value, title]) => `<option value="${value}" ${profile.gender === value ? 'selected' : ''}>${title}</option>`).join('')}</select></label></div></form><p class="pf-muted">Thông tin được lưu trên trình duyệt này.</p>`;
   return renderPatientStage(body, `<button class="pf-secondary" onclick="logout()">Đăng xuất</button><button type="submit" form="patientProfileForm" class="pf-primary">Lưu thông tin</button>`, 'pf-stage-profile');
 }
 function savePatientProfile(event) {
   event.preventDefault();
+  if (!requirePatientSession('information')) return;
   const name = document.getElementById('profileName').value.trim();
   if (!name) { document.getElementById('profileName').focus(); showToast('Vui lòng nhập họ và tên.'); return; }
   patientFlow.profile = { name, phone: document.getElementById('profilePhone').value.trim(), age: document.getElementById('profileAge').value, gender: document.getElementById('profileGender').value };
   const saved = persistPatientData();
-  renderPatientTab('profile');
+  renderPatientTab('information');
   showToast(saved ? 'Đã lưu thông tin cá nhân.' : 'Đã cập nhật trong phiên này. Không truy cập được bộ nhớ trình duyệt.');
 }

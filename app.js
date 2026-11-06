@@ -5,7 +5,8 @@
 
 // Global Application State
 const appState = {
-  currentScreen: 'screen-auth',
+  currentScreen: 'screen-patient',
+  isAuthenticated: false,
   currentUser: {
     username: 'Trần Tuấn Anh',
     phone: '0912 345 678',
@@ -27,8 +28,7 @@ const appState = {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
-  // Chỉ hiển thị màn hình auth khi khởi động
-  navigateTo('screen-auth');
+  initializeApplication();
 
   // Nạp dữ liệu bệnh nhân từ file patients.json
   loadPatientsFromJson();
@@ -275,17 +275,20 @@ function handleRegisterSubmit(event) {
   appState.currentUser.role = 'user';
   appState.currentUser.recordId = '#VSC-' + Math.floor(1000 + Math.random() * 9000);
 
-  showToast(`Đăng ký thành công tài khoản [${username}]! Đang đăng nhập...`);
-
-  setTimeout(() => {
-    loginAs('user');
-  }, 400);
+  loginAs('user');
 }
 
 function loginAs(role) {
+  appState.currentUser.role = role;
+  appState.isAuthenticated = true;
+  persistApplicationSession();
+  clearAuthenticationInputs();
+  const destination = patientNavigation.pending || 'home';
+  patientNavigation.pending = null;
   if (role === 'user') {
     navigateTo('screen-patient');
     initPatientApp();
+    if (destination !== 'home') renderPatientTab(destination);
   } else {
     renderAdminPatientList(appState.activeFilter);
     navigateTo('screen-doctor');
@@ -295,13 +298,19 @@ function loginAs(role) {
 }
 
 function logout() {
+  closePatientMenus(false);
+  appState.isAuthenticated = false;
+  try { sessionStorage.removeItem(PATIENT_SESSION_KEY); } catch { /* Storage may be unavailable. */ }
+  patientNavigation.pending = null;
   if (typeof patientFlow !== 'undefined') {
     stopPatientCamera();
     patientFlow.draft = null;
     patientFlow.completing = false;
   }
-  navigateTo('screen-auth');
-  showToast('Đã đăng xuất tài khoản an toàn');
+  appState.currentUser = { username: '', phone: '', role: 'user', recordId: '' };
+  navigateTo('screen-patient');
+  initPatientApp();
+  showToast('Đã đăng xuất.');
 }
 
 /* ==========================================================================
