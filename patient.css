@@ -72,12 +72,12 @@
 .pf-scale > div { display: flex; flex-direction: column; align-items: center; gap: 7px; }
 .pf-scale span { display: grid; place-items: center; width: 100%; height: 28px; background: var(--level-bg); color: var(--level-color); border-radius: 6px; font-weight: 800; font-size: 13px; }
 .pf-scale small { font-size: 8px; color: #64748b; text-align: center; }
-.pf-bottom-nav { flex-shrink: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 10px 8px max(12px, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #e4ebef; }
-.pf-bottom-nav button { display: flex; align-items: center; flex-direction: column; justify-content: center; gap: 4px; min-height: 45px; color: #94a3b8; font-size: 9px; font-weight: 600; }
-.pf-bottom-nav svg { width: 20px; height: 20px; }
-.pf-bottom-nav .active { color: #0f766e; }
-.pf-bottom-nav .active svg { background: #e4f6ef; box-shadow: 0 0 0 5px #e4f6ef; border-radius: 5px; }
-.pf-bottom-nav .active span { font-weight: 800; }
+/* Compact floating island; its own layout space keeps page actions unobstructed. */
+.pf-bottom-nav { flex-shrink: 0; align-self: center; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; width: min(240px, calc(100% - 32px)); padding: 4px; margin: 6px 0 max(10px, env(safe-area-inset-bottom)); border-radius: 999px; background: #fff; box-shadow: 0 8px 24px #102c2914, 0 0 0 1px #e4ebef; }
+.pf-bottom-nav button { display: grid; place-items: center; justify-self: center; width: 44px; height: 44px; border-radius: 50%; color: #64748b; transition: color .15s, background .15s; }
+.pf-bottom-nav button:hover { color: #0f766e; background: #f0fdfa; }
+.pf-bottom-nav svg { width: 21px; height: 21px; }
+.pf-bottom-nav .active, .pf-bottom-nav .active:hover { color: #123e30; background: #b6f3d6; }
 .pf-flow-steps { display: grid; grid-template-columns: repeat(3, 1fr); list-style: none; gap: 8px; padding: 0 0 18px; border-bottom: 1px solid #e2e8f0; }
 .pf-flow-steps li { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #94a3b8; }
 .pf-flow-steps span { display: grid; place-items: center; width: 23px; height: 23px; background: #e9eef2; border-radius: 50%; font-size: 10px; font-weight: 800; }
