@@ -1,0 +1,69 @@
+/* Header menus share the same controls and styling on public and signed-in pages. */
+.pf-header {
+  position: relative;
+  z-index: 45;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 88px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.pf-header .pf-brand { justify-content: center; text-align: center; min-width: 0; }
+.pf-header .pf-brand > div { min-width: 0; }
+.pf-header .pf-brand h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-header-actions { display: flex; align-items: center; gap: 8px; }
+.pf-header-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e4ebef;
+  border-radius: 12px;
+  background: white;
+  color: #0f766e;
+}
+.pf-header-button svg { width: 21px; height: 21px; }
+.pf-header-button:hover, .pf-header-button[aria-expanded="true"] { background: #ecf7f1; border-color: #b5d6c9; }
+.pf-header-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 46;
+  width: min(238px, calc(100% - 24px));
+  padding: 7px;
+  border: 1px solid #dfe9e4;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 12px 35px #143c3026;
+}
+.pf-header-menu[hidden] { display: none !important; }
+.pf-header-menu--left { left: 12px; }
+.pf-header-menu--right { right: 12px; }
+.pf-header-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 43px;
+  padding: 10px;
+  border-radius: 9px;
+  color: #475569;
+  font-size: 12px;
+  text-align: left;
+}
+.pf-header-menu__item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.pf-header-menu__item:hover, .pf-header-menu__item[aria-current="page"] { background: #edf8f2; color: #0f766e; }
+.pf-header-menu__item--separated { margin-top: 5px; border-top: 1px solid #e9efec; border-top-left-radius: 0; border-top-right-radius: 0; }
+.pf-header-menu__identity { padding: 11px 10px; margin-bottom: 4px; border-bottom: 1px solid #e9efec; color: #1e293b; font-size: 12px; font-weight: 700; overflow-wrap: anywhere; }
+.pf-header-button:focus-visible, .pf-header-menu__item:focus-visible { outline: 3px solid #5eead4; outline-offset: 1px; }
+.pf-signin-state, .pf-settings-state { display: grid; place-items: center; flex: 1; min-height: 0; padding: 24px; }
+.pf-signin-state .pf-primary { width: min(100%, 250px); }
+.pf-content .pf-settings-state h2 { font-size: 19px; color: #64748b; }
+.auth-topbar { padding: 10px 14px 0; flex-shrink: 0; }
+@media (max-height: 650px) {
+  .auth-scroll-body { padding: 12px 18px; justify-content: flex-start; }
+  .auth-header { margin-bottom: 12px; }
+  .auth-logo-badge { width: 38px; height: 38px; margin-bottom: 7px; border-radius: 12px; }
+  .auth-title { font-size: 15px; }
+  .auth-tabs { height: 42px; min-height: 42px; margin-bottom: 12px; }
+  .shared-form-card { padding: 14px; gap: 10px; }
+}

@@ -5,7 +5,8 @@
 
 // Global Application State
 const appState = {
-  currentScreen: 'screen-auth',
+  currentScreen: 'screen-patient',
+  isAuthenticated: false,
   currentUser: {
     username: 'Trần Tuấn Anh',
     phone: '0912 345 678',
@@ -27,8 +28,7 @@ const appState = {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
-  // Chỉ hiển thị màn hình auth khi khởi động
-  navigateTo('screen-auth');
+  initializeApplication();
 
   // Nạp dữ liệu bệnh nhân từ file patients.json
   loadPatientsFromJson();
@@ -275,326 +275,40 @@ function handleRegisterSubmit(event) {
   appState.currentUser.role = 'user';
   appState.currentUser.recordId = '#VSC-' + Math.floor(1000 + Math.random() * 9000);
 
-  showToast(`Đăng ký thành công tài khoản [${username}]! Đang đăng nhập...`);
-
-  setTimeout(() => {
-    loginAs('user');
-  }, 400);
+  loginAs('user');
 }
 
 function loginAs(role) {
+  appState.currentUser.role = role;
+  appState.isAuthenticated = true;
+  persistApplicationSession();
+  clearAuthenticationInputs();
+  const destination = patientNavigation.pending || 'home';
+  patientNavigation.pending = null;
   if (role === 'user') {
     navigateTo('screen-patient');
     initPatientApp();
+    if (destination !== 'home') renderPatientTab(destination);
   } else {
     renderAdminPatientList(appState.activeFilter);
     navigateTo('screen-doctor');
-    switchDoctorTab('cases');
+    switchDoctorTab('analytics');
     showToast('Đang ở giao diện Bác sĩ: BS. Nguyễn Minh Đức');
   }
 }
 
 function logout() {
+  closePatientMenus(false);
+  appState.isAuthenticated = false;
+  try { sessionStorage.removeItem(PATIENT_SESSION_KEY); } catch { /* Storage may be unavailable. */ }
+  patientNavigation.pending = null;
   if (typeof patientFlow !== 'undefined') {
     stopPatientCamera();
     patientFlow.draft = null;
     patientFlow.completing = false;
   }
-  navigateTo('screen-auth');
-  showToast('Đã đăng xuất tài khoản an toàn');
-}
-
-/* ==========================================================================
-   DOCTOR SCREEN & CLINICAL DOSSIER
-   ========================================================================== */
-
-function filterPatients(filterKey, btn) {
-  appState.activeFilter = filterKey;
-  
-  document.querySelectorAll('.filter-chip, .filter-tab-btn').forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-
-  renderAdminPatientList(filterKey);
-}
-
-function renderAdminPatientList(filter) {
-  const container = document.getElementById('adminPatientListContainer');
-  if (!container) return;
-
-  let list = appState.patients;
-  if (filter === 'pending') {
-    list = list.filter(p => p.status === 'pending');
-  } else if (filter === 'urgent') {
-    list = list.filter(p => p.status === 'urgent');
-  } else if (filter === 'reviewed') {
-    list = list.filter(p => p.status === 'reviewed');
-  }
-
-  container.innerHTML = '';
-
-  if (list.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 2rem 1rem; color: #94a3b8; font-size: 0.75rem;">
-        <i data-lucide="inbox" style="width: 28px; height: 28px; margin: 0 auto 0.5rem auto; color: #cbd5e1;"></i>
-        <p>Không có hồ sơ nào trong mục này</p>
-      </div>
-    `;
-    if (window.lucide) window.lucide.createIcons();
-    return;
-  }
-
-  list.forEach(p => {
-    const isUrgent = p.status === 'urgent';
-    const isReviewed = p.status === 'reviewed';
-
-    const card = document.createElement('div');
-    card.className = `admin-patient-card ${isUrgent ? 'admin-patient-card--urgent' : ''}`;
-    card.innerHTML = `
-      <!-- HEADER: Tên BN + Tuổi + Mã HS | VSC Score -->
-      <div class="apc-header">
-        <div class="apc-header__left">
-          <span class="apc-status-dot ${isUrgent ? 'apc-status-dot--urgent' : isReviewed ? 'apc-status-dot--reviewed' : 'apc-status-dot--pending'}"></span>
-          <strong class="apc-name">${p.name}</strong>
-          <span class="apc-age">(${p.age}t)</span>
-          <span class="badge badge-mono badge-slate">#${p.id}</span>
-        </div>
-        <div class="apc-header__right">
-          <span class="badge badge-mono ${p.vscScore > 250 ? 'badge-rose' : 'badge-amber'}">${p.vscScore} ppb</span>
-        </div>
-      </div>
-
-      <!-- ROW 1: Ảnh cặn lưỡi + Đánh giá Winkel Index -->
-      <div class="apc-row-clinical">
-        <div class="apc-img-thumb-wrap">
-          <img src="${p.photoUrl}" alt="Ảnh lưỡi" class="apc-img-thumb">
-        </div>
-        <div class="apc-clinical-info">
-          <span class="apc-row-label">Đánh giá cặn lưỡi</span>
-          <p class="apc-clinical-text"><strong>Winkel:</strong> ${p.winkelIndex}</p>
-        </div>
-      </div>
-
-      <!-- ROW 2: Triệu chứng người bệnh khai báo (Tách rõ 2 row: Row 2.1 Tiêu đề + Row 2.2 Nội dung không bị chèn ép) -->
-      <div class="apc-row-symptom">
-        <div class="apc-symptom-label-row">
-          <i data-lucide="activity" style="width: 11px; height: 11px;"></i>
-          <span>TRIỆU CHỨNG KHAI BÁO:</span>
-        </div>
-        <p class="apc-symptom-content">${p.survey.oralSensations}</p>
-      </div>
-
-      <!-- ROW 3: Hồ sơ đính kèm & Thời gian nộp (Ngang 1 hàng) -->
-      <div class="apc-row-docs">
-        <div class="apc-docs-list">
-          <span class="apc-doc-chip apc-doc-chip--active">
-            <i data-lucide="file-text" style="width: 10px; height: 10px;"></i> Phiếu KS
-          </span>
-          <span class="apc-doc-chip apc-doc-chip--active">
-            <i data-lucide="image" style="width: 10px; height: 10px;"></i> Ảnh lưỡi
-          </span>
-          <span class="apc-doc-chip">
-            <i data-lucide="pill" style="width: 10px; height: 10px;"></i> Toa thuốc
-          </span>
-        </div>
-        <span class="apc-time">Nộp: ${p.submittedAt}</span>
-      </div>
-
-      <!-- ROW 4 / ACTIONS: Cặp nút hành động 50% - 50% bằng nhau -->
-      <div class="apc-actions">
-        <button onclick="openPatientDossier('${p.id}')" class="btn btn-secondary btn-action-view">
-          <i data-lucide="file-search" style="width: 13px; height: 13px;"></i>
-          <span>Xem giấy tờ</span>
-        </button>
-        <button onclick="quickApprove('${p.id}')" class="btn ${isReviewed ? 'btn-teal-light' : isUrgent ? 'btn-danger' : 'btn-primary'} btn-action-approve">
-          <i data-lucide="${isReviewed ? 'check-check' : 'check'}" style="width: 13px; height: 13px;"></i>
-          <span>${isReviewed ? 'Đã duyệt' : 'Duyệt & Đo khí'}</span>
-        </button>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-}
-
-function openPatientDossier(patientId) {
-  const p = appState.patients.find(item => item.id === patientId);
-  if (!p) return;
-
-  appState.currentViewingPatientId = patientId;
-
-  document.getElementById('dossierTitle').innerText = `Hồ sơ nộp tới BS. Đức: ${p.name}`;
-  document.getElementById('dossierRecordId').innerText = `#${p.id}`;
-  
-  const nameEl = document.getElementById('dossierPatientName');
-  if (nameEl) nameEl.innerText = p.name;
-  
-  const demoEl = document.getElementById('dossierPatientDemographics');
-  if (demoEl) demoEl.innerText = `${p.gender} • ${p.age} tuổi`;
-  
-  const phoneEl = document.getElementById('dossierPatientPhone');
-  if (phoneEl) phoneEl.innerText = p.phone;
-
-  const timeEl = document.getElementById('dossierSubmittedTime');
-  if (timeEl) timeEl.innerText = `Nộp: ${p.submittedAt}`;
-
-  const vscScoreEl = document.getElementById('dossierVscScore');
-  if (vscScoreEl) {
-    vscScoreEl.innerText = `${p.vscScore} ppb`;
-    vscScoreEl.className = `badge badge-mono ${p.vscScore > 250 ? 'badge-rose' : 'badge-amber'} dpc-vsc-badge`;
-  }
-
-  const vscLevelEl = document.getElementById('dossierVscLevel');
-  if (vscLevelEl) {
-    vscLevelEl.innerText = p.vscLevel;
-    vscLevelEl.style.color = p.vscScore > 250 ? 'var(--rose-600)' : 'var(--amber-600)';
-  }
-
-  document.getElementById('dossierSurveyPeak').innerText = p.survey.peakTime;
-  document.getElementById('dossierSurveySensations').innerText = p.survey.oralSensations;
-  document.getElementById('dossierSurveyGerd').innerText = p.survey.gerdHistory;
-  document.getElementById('dossierSurveyHabit').innerText = p.survey.cleaningHabit;
-  document.getElementById('dossierSurveyAnxiety').innerText = p.survey.anxietyScore;
-
-  document.getElementById('dossierPhotoImg').src = p.photoUrl;
-  document.getElementById('dossierPhotoAngle').innerText = p.photoAngle;
-  document.getElementById('dossierPatientNote').innerText = p.patientNote;
-  document.getElementById('dossierWinkelIndex').innerText = p.winkelIndex;
-
-  document.getElementById('dossierMedsPrescription').innerText = p.medications.prescriptions;
-  document.getElementById('dossierMedsMouthwash').innerText = p.medications.mouthwash;
-
-  const noteBox = document.getElementById('doctorOrderInput');
-  if (noteBox) {
-    noteBox.value = p.doctorDiagnosis || `Chỉ định lấy mẫu khí Halimeter lúc 14:30. Khuyên dùng cây cạo lưỡi chuyên dụng 2 lần/ngày kết hợp súc miệng diệt khuẩn kỵ khí sinh VSC.`;
-  }
-
-  switchDossierTab('survey');
-
-  const modal = document.getElementById('patientDossierModal');
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-  }
-
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-}
-
-function closePatientDossier() {
-  const modal = document.getElementById('patientDossierModal');
-  if (modal) {
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
-  }
-}
-
-function switchDossierTab(tabKey) {
-  const tabs = ['survey', 'photo', 'meds'];
-  tabs.forEach(t => {
-    const btn = document.getElementById(`dossierTab_${t}`);
-    const panel = document.getElementById(`dossierPanel_${t}`);
-    if (btn) btn.classList.remove('active');
-    if (panel) {
-      panel.classList.add('hidden');
-      panel.style.display = 'none';
-    }
-  });
-
-  const activeBtn = document.getElementById(`dossierTab_${tabKey}`);
-  const activePanel = document.getElementById(`dossierPanel_${tabKey}`);
-  if (activeBtn) activeBtn.classList.add('active');
-  if (activePanel) {
-    activePanel.classList.remove('hidden');
-    activePanel.style.display = 'flex';
-  }
-
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-}
-
-function appendPrescriptionTemplate(type) {
-  const box = document.getElementById('doctorOrderInput');
-  if (!box) return;
-
-  const templates = {
-    halimeter: 'Chỉ định đo nồng độ khí Halimeter tại Phòng 204 lúc 14:30.',
-    scraper: 'Sử dụng cây cạo lưỡi chuyên dụng 2 lần/ngày (sáng sau ngủ dậy và tối trước khi ngủ).',
-    rinse: 'Súc miệng dung dịch kháng khuẩn Kẽm + CPC 2 lần/ngày, ngưng súc miệng chứa cồn.',
-  };
-
-  const textToAdd = templates[type];
-  if (!textToAdd) return;
-
-  if (box.value.trim() === '') {
-    box.value = textToAdd;
-  } else if (!box.value.includes(textToAdd)) {
-    box.value = box.value.trim() + ' ' + textToAdd;
-  }
-  
-  box.focus();
-}
-
-function submitDoctorOrder() {
-  const patientId = appState.currentViewingPatientId;
-  const p = appState.patients.find(item => item.id === patientId);
-  const noteBox = document.getElementById('doctorOrderInput');
-
-  if (p && noteBox) {
-    p.status = 'reviewed';
-    p.doctorDiagnosis = noteBox.value.trim();
-
-    closePatientDossier();
-    renderAdminPatientList(appState.activeFilter);
-    showToast(`BS. Đức đã duyệt đơn & gửi phác đồ tới ${p.name}`);
-  }
-}
-
-function quickApprove(patientId) {
-  const p = appState.patients.find(item => item.id === patientId);
-  if (p) {
-    p.status = 'reviewed';
-    p.doctorDiagnosis = 'Đã duyệt yêu cầu đo khí Halimeter tại Phòng 204.';
-    renderAdminPatientList(appState.activeFilter);
-    showToast(`Đã duyệt đơn và xếp lịch đo khí Halimeter cho ${p.name}`);
-  }
-}
-
-/* ==========================================================================
-   DOCTOR SUB-PAGE NAVIGATION (CHUYỂN TRANG RIÊNG BIỆT CHO BÁC SĨ)
-   ========================================================================== */
-
-function switchDoctorTab(tabId) {
-  const tabs = ['cases', 'schedule', 'analytics'];
-  tabs.forEach(t => {
-    const navBtn = document.getElementById(`docNav_${t}`);
-    const subpage = document.getElementById(
-      t === 'cases' ? 'docSubpageCases' : (t === 'schedule' ? 'docSubpageSchedule' : 'docSubpageAnalytics')
-    );
-    if (navBtn) {
-      if (t === tabId) {
-        navBtn.classList.add('active');
-      } else {
-        navBtn.classList.remove('active');
-      }
-    }
-    if (subpage) {
-      if (t === tabId) {
-        subpage.classList.remove('hidden');
-        subpage.style.display = 'flex';
-      } else {
-        subpage.classList.add('hidden');
-        subpage.style.display = 'none';
-      }
-    }
-  });
-
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
+  appState.currentUser = { username: '', phone: '', role: 'user', recordId: '' };
+  navigateTo('screen-patient');
+  initPatientApp();
+  showToast('Đã đăng xuất.');
 }

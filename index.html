@@ -16,6 +16,11 @@
   <!-- Pure CSS Mobile Stylesheet -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="patient.css">
+  <link rel="stylesheet" href="patient-history.css">
+  <link rel="stylesheet" href="patient-navigation.css">
+  <link rel="stylesheet" href="patient-communication.css">
+  <link rel="stylesheet" href="doctor.css">
+  <link rel="stylesheet" href="auth.css">
 </head>
 <body>
 
@@ -36,7 +41,8 @@
     <!-- ==========================================================================
          MÀN HÌNH 1: ĐĂNG NHẬP & ĐĂNG KÝ (SCREEN-AUTH)
          ========================================================================== -->
-    <div id="screen-auth" class="app-screen">
+    <div id="screen-auth" class="app-screen hidden" style="display: none;">
+      <div class="auth-topbar"><button id="authBackButton" class="pf-header-button" onclick="cancelSignIn()" aria-label="Quay lại"><i data-lucide="arrow-left"></i></button></div>
       <div class="auth-scroll-body">
         <!-- Logo & App Name -->
         <div class="auth-header">
@@ -56,6 +62,23 @@
             Đăng ký mới
           </button>
         </div>
+
+        <div class="auth-social" role="group" aria-label="Đăng nhập hoặc đăng ký bằng tài khoản mạng xã hội">
+          <button type="button" class="auth-social-button auth-social-button--google" onclick="showToast('Đăng nhập bằng Google đang phát triển.')">
+            <svg class="auth-provider-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.36Z"/>
+              <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.06v2.59A10 10 0 0 0 12 22Z"/>
+              <path fill="#FBBC05" d="M6.4 13.91a6 6 0 0 1 0-3.82V7.5H3.06a10 10 0 0 0 0 9l3.34-2.59Z"/>
+              <path fill="#EA4335" d="M12 5.96c1.47 0 2.79.51 3.82 1.51l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.94 5.5l3.34 2.59A5.99 5.99 0 0 1 12 5.96Z"/>
+            </svg>
+            <span>Tiếp tục với Google</span>
+          </button>
+          <button type="button" class="auth-social-button auth-social-button--facebook" onclick="showToast('Đăng nhập bằng Facebook đang phát triển.')">
+            <svg class="auth-provider-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3.01 1.8-4.67 4.55-4.67 1.32 0 2.69.24 2.69.24v2.95h-1.52c-1.5 0-1.96.93-1.96 1.88V12h3.33l-.53 3.47h-2.8v8.38A12 12 0 0 0 24 12Z"/></svg>
+            <span>Tiếp tục với Facebook</span>
+          </button>
+        </div>
+        <div class="auth-social-divider"><span>hoặc dùng tài khoản</span></div>
 
         <!-- Form Đăng nhập -->
         <div id="loginFormBox" class="shared-form-card">
@@ -130,425 +153,75 @@
     <!-- ==========================================================================
          MÀN HÌNH 2: GIAO DIỆN BỆNH NHÂN (SCREEN-PATIENT)
          ========================================================================== -->
-    <div id="screen-patient" class="app-screen hidden" style="display: none;">
-      <header class="pf-header"><div class="pf-brand"><span class="pf-brand-mark"><i data-lucide="activity"></i></span><div><p>BREATH CARE</p><h1 id="patientScreenTitle">Trang chủ</h1></div></div></header>
+    <div id="screen-patient" class="app-screen">
+      <header class="pf-header">
+        <button id="patientMenuButton" class="pf-header-button" onclick="togglePatientMenu('navigation')" aria-label="Mở menu chức năng" aria-haspopup="menu" aria-controls="patientNavigationMenu" aria-expanded="false"><i data-lucide="menu"></i></button>
+        <div class="pf-brand"><div><p>BREATH CARE</p><h1 id="patientScreenTitle">Trang chủ</h1></div></div>
+        <div class="pf-header-actions">
+          <button id="patientNotificationButton" class="pf-header-button pf-notification-trigger" onclick="togglePatientMenu('notifications')" aria-label="Thông báo" aria-haspopup="dialog" aria-controls="patientNotificationPanel" aria-expanded="false"><i data-lucide="bell" aria-hidden="true"></i><span id="patientNotificationBadge" class="pf-notification-badge" aria-hidden="true" hidden></span></button>
+          <button id="patientProfileButton" class="pf-header-button" onclick="togglePatientMenu('profile')" aria-label="Mở menu hồ sơ" aria-haspopup="menu" aria-controls="patientProfileMenu" aria-expanded="false"><i data-lucide="user-round"></i></button>
+        </div>
+        <div id="patientNavigationMenu" class="pf-header-menu pf-header-menu--left" role="menu" aria-labelledby="patientMenuButton" hidden></div>
+        <div id="patientProfileMenu" class="pf-header-menu pf-header-menu--right" role="menu" aria-labelledby="patientProfileButton" hidden></div>
+        <section id="patientNotificationPanel" class="pf-header-menu pf-notification-panel" role="dialog" aria-labelledby="patientNotificationTitle" tabindex="-1" hidden></section>
+      </header>
       <main id="patientContent" class="pf-content" aria-label="Nội dung ứng dụng"></main>
       <nav class="pf-bottom-nav" aria-label="Điều hướng chính">
         <button data-patient-tab="home" onclick="renderPatientTab('home')" aria-label="Trang chủ" title="Trang chủ"><i data-lucide="house" aria-hidden="true"></i></button>
         <button data-patient-tab="diagnosis" onclick="renderPatientTab('diagnosis')" aria-label="Chẩn đoán" title="Chẩn đoán"><i data-lucide="scan-line" aria-hidden="true"></i></button>
-        <button data-patient-tab="history" onclick="renderPatientTab('history')" aria-label="Lịch sử" title="Lịch sử"><i data-lucide="history" aria-hidden="true"></i></button>
+        <button data-patient-tab="history" onclick="returnToPatientHistory()" aria-label="Lịch sử" title="Lịch sử"><i data-lucide="history" aria-hidden="true"></i></button>
         <button data-patient-tab="profile" onclick="renderPatientTab('profile')" aria-label="Hồ sơ cá nhân" title="Hồ sơ cá nhân"><i data-lucide="user-round" aria-hidden="true"></i></button>
       </nav>
     </div>
 
-    <!-- ==========================================================================
-         MÀN HÌNH 3: GIAO DIỆN BÁC SĨ (SCREEN-DOCTOR)
-         GỒM 3 TRANG CON RIÊNG BIỆT: HỒ SƠ CA, LỊCH ĐO KHÍ, THỐNG KÊ
-         ========================================================================== -->
-    <div id="screen-doctor" class="app-screen hidden" style="display: none;">
-      <!-- Header Bác sĩ: Thiết kế Grid gọn gàng, tinh tế, không chèn ép -->
-      <header class="app-header doctor-header">
-        <div class="doctor-header-grid">
-          <div class="doctor-avatar-circle">
-            <i data-lucide="stethoscope" style="width: 20px; height: 20px;"></i>
-          </div>
-          <div class="doctor-header-meta">
-            <h2 class="doctor-name">BS. Nguyễn Minh Đức</h2>
-            <div class="doctor-status-line">
-              <span class="status-pulse-dot"></span>
-              <span>Phòng trực 204 • Khám vi sinh</span>
-            </div>
-          </div>
-          <button onclick="showToast('Phòng 204: 3 ca đang chờ đo khí')" class="btn-icon" title="Thông báo">
-            <i data-lucide="bell" style="width: 17px; height: 17px;"></i>
-          </button>
-        </div>
+    <!-- Doctor workspace -->
+    <div id="screen-doctor" class="app-screen df-screen hidden" style="display: none;">
+      <header class="df-header">
+        <span class="df-brand-icon"><i data-lucide="stethoscope" aria-hidden="true"></i></span>
+        <div class="df-header-copy"><strong id="doctorHeaderName">BS. Nguyễn Minh Đức</strong><p><span class="df-online-dot"></span><span id="doctorHeaderRoom">Phòng 204</span> · Breath Care</p></div>
+        <button class="df-icon-button" onclick="logout()" aria-label="Đăng xuất" title="Đăng xuất"><i data-lucide="log-out" aria-hidden="true"></i></button>
       </header>
-
-      <!-- TRANG CON 1: HỒ SƠ CA BỆNH (CASES) -->
-      <div id="docSubpageCases" class="screen-scroll-body doc-subpage">
-        <!-- Dải Tóm Tắt Tình Trạng Ca Trực (Miller's Law & Cognitive Chunking - Giảm tải thị giác) -->
-        <div class="doctor-triage-strip">
-          <div class="triage-stat-item">
-            <span class="triage-stat-val">3</span>
-            <span class="triage-stat-lbl">Tổng ca</span>
-          </div>
-          <div class="triage-stat-divider"></div>
-          <div class="triage-stat-item triage-stat-urgent">
-            <div class="triage-urgent-badge">
-              <span class="triage-stat-val text-rose">1</span>
-              <span class="pulse-dot-urgent"></span>
-            </div>
-            <span class="triage-stat-lbl text-rose">VSC cao (Khẩn)</span>
-          </div>
-          <div class="triage-stat-divider"></div>
-          <div class="triage-stat-item">
-            <span class="triage-stat-val text-emerald">1</span>
-            <span class="triage-stat-lbl">Đã phác đồ</span>
-          </div>
-          <div class="triage-stat-divider"></div>
-          <div class="triage-stat-item">
-            <span class="triage-stat-val text-brand">100%</span>
-            <span class="triage-stat-lbl">Đã có ảnh</span>
-          </div>
-        </div>
-
-        <!-- Bộ lọc hồ sơ nộp tới BS (Thiết kế Segmented Pills tinh gọn, Hick's Law) -->
-        <div class="doctor-filter-section">
-          <div class="doctor-filter-tabs no-scrollbar">
-            <button class="filter-tab-btn active" onclick="filterPatients('all', this)">
-              Tất cả <span>(3)</span>
-            </button>
-            <button class="filter-tab-btn" onclick="filterPatients('pending', this)">
-              Chờ duyệt <span>(1)</span>
-            </button>
-            <button class="filter-tab-btn filter-tab-urgent" onclick="filterPatients('urgent', this)">
-              Khẩn cấp <span>(1)</span>
-            </button>
-            <button class="filter-tab-btn" onclick="filterPatients('reviewed', this)">
-              Đã xử lý <span>(1)</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Danh sách card hồ sơ được render bởi JS -->
-        <div id="adminPatientListContainer" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-      </div>
-
-      <!-- TRANG CON 2: LỊCH ĐO KHÍ HALIMETER (SCHEDULE) -->
-      <div id="docSubpageSchedule" class="screen-scroll-body doc-subpage hidden" style="display: none;">
-        <div class="schedule-summary-card">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--brand-900);">Lịch đo khí Halimeter hôm nay</span>
-            <span class="badge badge-teal">3 ca hẹn</span>
-          </div>
-          <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.2rem;">Phòng xét nghiệm vi sinh 204 • Máy Halimeter RH-17</p>
-        </div>
-
-        <div class="schedule-list">
-          <!-- Ca 1: 14:30 -->
-          <div class="schedule-item-card">
-            <div class="schedule-time-col">
-              <span class="sched-hour">14:30</span>
-              <span class="badge badge-amber" style="font-size: 0.5625rem; padding: 2px 4px;">Sắp tới</span>
-            </div>
-            <div class="schedule-info-col">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <h4 style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin: 0;">Trần Tuấn Anh (28t)</h4>
-                <span class="badge badge-slate">#VSC-3184</span>
-              </div>
-              <p style="font-size: 0.6875rem; color: #475569; margin: 3px 0 6px 0;">Đo định kỳ kiểm tra nồng độ khí sau 2 tuần chải lưỡi</p>
-              <div class="schedule-actions-grid">
-                <button onclick="openPatientDossier('VSC-3184')" class="btn btn-secondary" style="height: 32px; font-size: 0.6875rem;">
-                  <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Xem hồ sơ
-                </button>
-                <button onclick="showToast('Đang kết nối máy đo Halimeter cho bệnh nhân Trần Tuấn Anh...')" class="btn btn-primary" style="height: 32px; font-size: 0.6875rem;">
-                  <i data-lucide="play" style="width: 13px; height: 13px;"></i> Bắt đầu đo
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ca 2: 15:15 (Khẩn cấp) -->
-          <div class="schedule-item-card urgent-border">
-            <div class="schedule-time-col">
-              <span class="sched-hour" style="color: var(--rose-600);">15:15</span>
-              <span class="badge badge-rose" style="font-size: 0.5625rem; padding: 2px 4px;">Khẩn</span>
-            </div>
-            <div class="schedule-info-col">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <h4 style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin: 0;">Lê Thị Bích Ngọc (34t)</h4>
-                <span class="badge badge-rose">#VSC-8812</span>
-              </div>
-              <p style="font-size: 0.6875rem; color: #475569; margin: 3px 0 6px 0;">VSC rất cao (340 ppb) • Khạc hạt hôi ở hốc amidan</p>
-              <div class="schedule-actions-grid">
-                <button onclick="openPatientDossier('VSC-8812')" class="btn btn-secondary" style="height: 32px; font-size: 0.6875rem;">
-                  <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Xem hồ sơ
-                </button>
-                <button onclick="showToast('Đã gọi bệnh nhân Lê Thị Bích Ngọc vào phòng 204')" class="btn btn-primary" style="height: 32px; font-size: 0.6875rem; background-color: var(--rose-600);">
-                  <i data-lucide="user-check" style="width: 13px; height: 13px;"></i> Gọi vào phòng
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ca 3: 16:00 -->
-          <div class="schedule-item-card">
-            <div class="schedule-time-col">
-              <span class="sched-hour">16:00</span>
-              <span class="badge badge-emerald" style="font-size: 0.5625rem; padding: 2px 4px;">Hẹn trước</span>
-            </div>
-            <div class="schedule-info-col">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <h4 style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin: 0;">Hoàng Văn Khang (42t)</h4>
-                <span class="badge badge-slate">#VSC-4920</span>
-              </div>
-              <p style="font-size: 0.6875rem; color: #475569; margin: 3px 0 6px 0;">Đo kiểm tra định kỳ sau điều trị ợ chua và màng bợn lưỡi</p>
-              <div class="schedule-actions-grid">
-                <button onclick="openPatientDossier('VSC-4920')" class="btn btn-secondary" style="height: 32px; font-size: 0.6875rem;">
-                  <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Xem hồ sơ
-                </button>
-                <button onclick="showToast('Chuẩn bị đầu ngậm đo khí cho bệnh nhân Hoàng Văn Khang')" class="btn btn-primary" style="height: 32px; font-size: 0.6875rem;">
-                  <i data-lucide="play" style="width: 13px; height: 13px;"></i> Bắt đầu đo
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRANG CON 3: THỐNG KÊ LÂM SÀNG (ANALYTICS) -->
-      <div id="docSubpageAnalytics" class="screen-scroll-body doc-subpage hidden" style="display: none;">
-        <div class="stats-overview-grid">
-          <div class="stat-card">
-            <span class="stat-title">Tổng ca tiếp nhận</span>
-            <span class="stat-number">48</span>
-            <span class="stat-note" style="color: var(--emerald-600);">+12% so với tuần trước</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-title">Tỷ lệ VSC cao</span>
-            <span class="stat-number" style="color: var(--rose-600);">28%</span>
-            <span class="stat-note" style="color: var(--rose-600);">> 250 ppb cần ưu tiên</span>
-          </div>
-        </div>
-
-        <!-- Biểu đồ phân bổ nguyên nhân -->
-        <div class="stat-chart-card">
-          <h4 style="font-size: 0.75rem; font-weight: 700; color: #0f172a; margin: 0 0 0.75rem 0;">Phân bổ nguyên nhân hơi thở (Tháng này)</h4>
-          <div class="stat-bar-group">
-            <div class="stat-bar-label">
-              <span>Màng bợn cuống lưỡi</span>
-              <strong>68%</strong>
-            </div>
-            <div class="stat-bar-track">
-              <div class="stat-bar-fill" style="width: 68%; background-color: var(--brand-600);"></div>
-            </div>
-          </div>
-
-          <div class="stat-bar-group">
-            <div class="stat-bar-label">
-              <span>Sỏi amidan & Hốc họng</span>
-              <strong>18%</strong>
-            </div>
-            <div class="stat-bar-track">
-              <div class="stat-bar-fill" style="width: 18%; background-color: #a855f7;"></div>
-            </div>
-          </div>
-
-          <div class="stat-bar-group">
-            <div class="stat-bar-label">
-              <span>Viêm nướu & Kẽ chân răng</span>
-              <strong>14%</strong>
-            </div>
-            <div class="stat-bar-track">
-              <div class="stat-bar-fill" style="width: 14%; background-color: #f59e0b;"></div>
-            </div>
-          </div>
-        </div>
-
-        <button onclick="showToast('Đã xuất báo cáo thống kê lâm sàng dạng PDF')" class="btn btn-secondary btn-full" style="height: 42px; font-size: 0.75rem; margin-top: 0.25rem;">
-          <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-          <span>Xuất báo cáo ca trực</span>
-        </button>
-      </div>
-
-      <!-- Bottom Nav Bar RIÊNG CHO BÁC SĨ (CHUYỂN TRANG CON THỰC TẾ) -->
-      <nav class="bottom-nav doctor-bottom-nav">
-        <button id="docNav_cases" onclick="switchDoctorTab('cases')" class="nav-item active">
-          <i data-lucide="clipboard-list" style="width: 18px; height: 18px;"></i>
-          <span>Hồ sơ ca</span>
-        </button>
-
-        <button id="docNav_schedule" onclick="switchDoctorTab('schedule')" class="nav-item">
-          <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
-          <span>Lịch đo khí</span>
-        </button>
-
-        <button id="docNav_analytics" onclick="switchDoctorTab('analytics')" class="nav-item">
-          <i data-lucide="bar-chart-2" style="width: 18px; height: 18px;"></i>
-          <span>Thống kê</span>
-        </button>
-
-        <button onclick="logout()" class="nav-item">
-          <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
-          <span>Đăng xuất</span>
-        </button>
+      <main id="docSubpageAnalytics" class="df-page" aria-label="Tổng quan công việc">
+        <div class="df-page-heading"><p class="df-eyebrow" id="doctorToday"></p><h1>Chào bác sĩ Đức<span aria-hidden="true">.</span></h1><p>Một góc nhìn rõ ràng cho mỗi ca bệnh.</p></div>
+        <section class="df-hero"><span class="df-eyebrow">CÔNG VIỆC CỦA BẠN</span><h2 id="doctorWorkload"></h2><p id="doctorWorkloadHint"></p><button id="doctorReviewNext">Xem hồ sơ tiếp theo <i data-lucide="arrow-right" aria-hidden="true"></i></button></section>
+        <div id="doctorOverviewStats" class="df-stats" aria-label="Thống kê hồ sơ"></div>
+        <section><div class="df-section-heading"><h2>Cần bạn xem xét</h2><button class="df-text-button" onclick="showDoctorCases()">Tất cả <i data-lucide="arrow-right" aria-hidden="true"></i></button></div><div id="doctorPriorityList" class="df-case-list"></div></section>
+        <section class="df-progress" aria-label="Tiến độ xử lý"><div><strong>Tiến độ xử lý</strong><span id="doctorProgressLabel"></span></div><progress id="doctorProgress" max="100" value="0" aria-label="Tỷ lệ hồ sơ đã xem"></progress></section>
+      </main>
+      <main id="docSubpageCases" class="df-page" aria-label="Danh sách hồ sơ" hidden>
+        <div class="df-page-heading"><p class="df-eyebrow">QUẢN LÝ CA BỆNH</p><h1>Hồ sơ bệnh nhân</h1><p>Hồ sơ ưu tiên được sắp xếp trước.</p></div>
+        <div><label class="df-search"><i data-lucide="search" aria-hidden="true"></i><input id="doctorSearch" type="search" placeholder="Tìm tên, mã hồ sơ, số điện thoại" aria-label="Tìm hồ sơ bệnh nhân" oninput="searchDoctorPatients(this.value)"></label><div class="df-filter-row"><span id="doctorResultCount" role="status" aria-live="polite"></span><select id="doctorStatusFilter" aria-label="Lọc trạng thái hồ sơ" onchange="filterPatients(this.value)"><option value="all">Tất cả trạng thái</option><option value="pending">Chờ xem</option><option value="urgent">Ưu tiên</option><option value="reviewed">Đã xem</option></select></div></div>
+        <div id="adminPatientListContainer" class="df-case-list"></div>
+      </main>
+      <main id="docSubpageSchedule" class="df-page" aria-label="Lịch hẹn" hidden>
+        <div class="df-page-heading"><p class="df-eyebrow">LỊCH LÀM VIỆC</p><h1>Lịch hẹn hôm nay</h1><p>Theo dõi ca hẹn và mở nhanh hồ sơ.</p></div>
+        <div class="df-schedule-banner"><i data-lucide="calendar-days" aria-hidden="true"></i><div><strong id="doctorScheduleCount"></strong><p><span id="doctorScheduleRoom"></span> · Đo khí Halimeter</p></div></div>
+        <div id="doctorScheduleList" class="df-case-list"></div>
+      </main>
+      <nav class="df-nav" aria-label="Điều hướng bác sĩ">
+        <button id="docNav_analytics" onclick="switchDoctorTab('analytics')" class="active" aria-current="page"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span>Tổng quan</span></button>
+        <button id="docNav_cases" onclick="switchDoctorTab('cases')"><i data-lucide="clipboard-list" aria-hidden="true"></i><span>Hồ sơ</span></button>
+        <button id="docNav_schedule" onclick="switchDoctorTab('schedule')"><i data-lucide="calendar-days" aria-hidden="true"></i><span>Lịch hẹn</span></button>
       </nav>
     </div>
 
-    <!-- ==========================================================================
-         MODAL: XEM ĐẦY ĐỦ GIẤY TỜ BỆNH ÁN NỘP TỚI BÁC SĨ (PATIENT DOSSIER)
-         ĐỒNG NHẤT PADDING, VIỀN & HIỂN THỊ ĐẦY ĐỦ TABS
-         ========================================================================== -->
-    <div id="patientDossierModal" class="modal-overlay hidden" style="display: none;">
-      <div class="modal-content">
-        <!-- Header Modal -->
-        <div class="modal-header">
-          <div class="modal-header__info">
-            <div class="icon-box icon-box--teal" style="width: 2rem; height: 2rem; border-radius: 8px;">
-              <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
-            </div>
-            <div>
-              <h3 id="dossierTitle" class="modal-header__title">Hồ sơ nộp tới Bác sĩ Đức</h3>
-              <p class="modal-header__sub"><span id="dossierRecordId">#VSC-3184</span> • Giấy tờ tiền lâm sàng</p>
-            </div>
-          </div>
-          <button onclick="closePatientDossier()" class="btn-icon" style="width: 2rem; height: 2rem;" title="Đóng">
-            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-          </button>
-        </div>
-
-        <!-- Body Modal -->
-        <div class="modal-body">
-          <!-- Thẻ tóm tắt thông tin bệnh nhân: Bố cục chia ROW rõ ràng, không rớt dòng -->
-          <div class="dossier-patient-card">
-            <!-- ROW 1: Tên bệnh nhân + Tuổi/Giới tính (trái) | Điểm số VSC ppb (phải) -->
-            <div class="dpc-row-header">
-              <div class="dpc-meta-left">
-                <h4 id="dossierPatientName" class="dpc-patient-name">Trần Tuấn Anh</h4>
-                <span id="dossierPatientDemographics" class="badge badge-slate dpc-demographics-badge">Nam • 28 tuổi</span>
-              </div>
-              <span id="dossierVscScore" class="badge badge-mono badge-amber dpc-vsc-badge">185 ppb</span>
-            </div>
-
-            <!-- ROW 2: Hai cột thông tin hành chính (SĐT & Giờ nộp) -->
-            <div class="dpc-row-info">
-              <div class="dpc-info-col">
-                <i data-lucide="phone" style="width: 12px; height: 12px; color: #64748b;"></i>
-                <span id="dossierPatientPhone" class="dpc-info-val">0912 345 678</span>
-              </div>
-              <div class="dpc-info-col" style="justify-content: flex-end;">
-                <i data-lucide="clock" style="width: 12px; height: 12px; color: #64748b;"></i>
-                <span id="dossierSubmittedTime" class="dpc-info-val">Nộp: 09:22 hôm nay</span>
-              </div>
-            </div>
-
-            <!-- ROW 3: Đánh giá phân loại nồng độ khí VSC -->
-            <div class="dpc-row-status">
-              <span class="dpc-status-label">Đánh giá tiền lâm sàng:</span>
-              <span id="dossierVscLevel" class="dpc-status-val">Nguy cơ VSC trung bình</span>
-            </div>
-          </div>
-
-          <!-- Tabs chọn loại giấy tờ: Đồng nhất padding, mượt mà -->
-          <div class="dossier-tabs">
-            <button id="dossierTab_survey" class="dossier-tab-btn active" onclick="switchDossierTab('survey')">
-              1. Phiếu khảo sát
-            </button>
-            <button id="dossierTab_photo" class="dossier-tab-btn" onclick="switchDossierTab('photo')">
-              2. Ảnh cặn rêu lưỡi
-            </button>
-            <button id="dossierTab_meds" class="dossier-tab-btn" onclick="switchDossierTab('meds')">
-              3. Thuốc & Súc miệng
-            </button>
-          </div>
-
-          <!-- PANEL 1: Phiếu khảo sát (Các box câu hỏi có padding & viền chuẩn hóa) -->
-          <div id="dossierPanel_survey" style="display: flex; flex-direction: column; gap: 0.65rem;">
-            <div class="survey-qa-box">
-              <span class="survey-q">Thời điểm mùi khó chịu nhất:</span>
-              <p id="dossierSurveyPeak" class="survey-a">Ngay sau khi thức dậy & Kéo dài cả ngày</p>
-            </div>
-            <div class="survey-qa-box">
-              <span class="survey-q">Cảm giác khoang miệng (Xerostomia):</span>
-              <p id="dossierSurveySensations" class="survey-a">Khô miệng đặc quánh vào ban đêm, vị đắng kim loại ở cuống họng</p>
-            </div>
-            <div class="survey-qa-box">
-              <span class="survey-q">Tiền sử trào ngược dạ dày (GERD):</span>
-              <p id="dossierSurveyGerd" class="survey-a">Thỉnh thoảng có ợ hơi, trào ngược dịch dạ dày sau bữa tối</p>
-            </div>
-            <div class="survey-qa-box">
-              <span class="survey-q">Thói quen vệ sinh bề mặt lưỡi:</span>
-              <p id="dossierSurveyHabit" class="survey-a">Chỉ dùng lông bàn chải cọ nhẹ qua lưỡi, chưa dùng cây cạo chuyên dụng</p>
-            </div>
-            <div class="survey-qa-box">
-              <span class="survey-q">Mức độ tự ti / Ngại giao tiếp (1 - 10):</span>
-              <p id="dossierSurveyAnxiety" class="survey-a" style="color: var(--brand-700); font-weight: 700;">7 / 10 (Ngại giao tiếp gần với đồng nghiệp)</p>
-            </div>
-          </div>
-
-          <!-- PANEL 2: Ảnh cặn lưỡi -->
-          <div id="dossierPanel_photo" class="hidden" style="display: none; flex-direction: column; gap: 0.65rem;">
-            <div class="clinical-photo-viewer">
-              <img id="dossierPhotoImg" src="" alt="Ảnh cặn lưỡi">
-              <span style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.75); color: var(--brand-300); font-size: 0.625rem; padding: 0.2rem 0.5rem; border-radius: 4px;">
-                Vị trí: <span id="dossierPhotoAngle">Mặt lưng lưỡi</span>
-              </span>
-            </div>
-
-            <div style="background-color: var(--brand-50); border: 1px solid var(--brand-200); border-radius: 12px; padding: 0.75rem;">
-              <span style="font-size: 0.6875rem; font-weight: 700; color: var(--brand-900);">Màng sinh học (Winkel Tongue Coating Index):</span>
-              <p id="dossierWinkelIndex" style="font-size: 0.75rem; color: var(--brand-800); font-weight: 600; margin-top: 0.2rem;">
-                4 / 12 (Tập trung 1/3 sau lưỡi)
-              </p>
-            </div>
-
-            <div class="survey-qa-box">
-              <span class="survey-q">Mô tả của bệnh nhân khi chụp:</span>
-              <p id="dossierPatientNote" class="survey-a" style="font-style: italic; color: #475569;">
-                Rêu trắng vàng vào buổi sáng, cảm giác miệng khô và hơi đắng sau khi thức dậy.
-              </p>
-            </div>
-          </div>
-
-          <!-- PANEL 3: Thuốc & Súc miệng -->
-          <div id="dossierPanel_meds" class="hidden" style="display: none; flex-direction: column; gap: 0.65rem;">
-            <div class="survey-qa-box">
-              <span class="survey-q">Thuốc điều trị đang dùng (Nguy cơ giảm tiết nước bọt):</span>
-              <p id="dossierMedsPrescription" class="survey-a">Loratadine 10mg (thuốc kháng dị ứng uống hàng ngày)</p>
-            </div>
-            <div class="survey-qa-box">
-              <span class="survey-q">Nước súc miệng đang dùng:</span>
-              <p id="dossierMedsMouthwash" class="survey-a">Nước súc miệng thông thường chứa cồn 12% (dùng 2 lần/ngày)</p>
-            </div>
-          </div>
-
-          <!-- Khung Bác sĩ ra phác đồ: Thiết kế thẻ đơn thuốc điện tử chuyên nghiệp -->
-          <div class="doctor-prescription-card">
-            <!-- Header của thẻ phác đồ -->
-            <div class="dpc-order-header">
-              <div style="display: flex; align-items: center; gap: 0.35rem;">
-                <i data-lucide="stethoscope" style="width: 14px; height: 14px; color: var(--brand-700);"></i>
-                <span class="dpc-order-title">Chẩn đoán & Phác đồ điều trị</span>
-              </div>
-              <span class="badge badge-teal" style="font-size: 0.625rem;">BS. Nguyễn Minh Đức</span>
-            </div>
-
-            <!-- Dãy phím tắt điền nhanh phác đồ mẫu (Rất tiện lợi trên Mobile) -->
-            <div class="prescription-quick-chips">
-              <button type="button" onclick="appendPrescriptionTemplate('halimeter')" class="rx-chip">
-                + Đo Halimeter lúc 14:30
-              </button>
-              <button type="button" onclick="appendPrescriptionTemplate('scraper')" class="rx-chip">
-                + Cạo lưỡi 2 lần/ngày
-              </button>
-              <button type="button" onclick="appendPrescriptionTemplate('rinse')" class="rx-chip">
-                + Súc miệng kẽm diệt VSC
-              </button>
-            </div>
-
-            <!-- Ô nhập phác đồ được thiết kế mượt mà, không resize thô -->
-            <div class="prescription-input-wrap">
-              <textarea id="doctorOrderInput" class="prescription-textarea" rows="3" placeholder="Nhập chỉ định lâm sàng, phác đồ điều trị hoặc lời dặn cho bệnh nhân..."></textarea>
-            </div>
-
-            <!-- Footer ghi chú gửi tức thì -->
-            <div class="dpc-order-footer">
-              <i data-lucide="shield-check" style="width: 12px; height: 12px; color: var(--emerald-600);"></i>
-              <span>Phác đồ sẽ gửi tức thời tới điện thoại bệnh nhân</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Modal: 1 Nút hành động duy nhất, toàn chiều ngang (Đã có nút X ở header) -->
-        <div class="modal-footer">
-          <button onclick="submitDoctorOrder()" class="btn btn-primary btn-full" style="height: 44px;">
-            <i data-lucide="send" style="width: 15px; height: 15px;"></i>
-            <span>Duyệt đơn & Gửi phác đồ điều trị</span>
-          </button>
-        </div>
+    <dialog id="patientDossierModal" class="df-dialog" aria-labelledby="dossierPatientName" onclose="finishDoctorDossier()">
+      <header class="df-dialog-header"><div><p class="df-eyebrow">CHI TIẾT HỒ SƠ</p><h2 id="dossierPatientName"></h2><p id="dossierRecordId"></p></div><button class="df-icon-button" onclick="closePatientDossier()" aria-label="Đóng hồ sơ" autofocus><i data-lucide="x" aria-hidden="true"></i></button></header>
+      <div class="df-tabs" role="tablist" aria-label="Nội dung hồ sơ">
+        <button id="dossierTab_survey" role="tab" aria-controls="dossierPanel_survey" aria-selected="true" onclick="switchDossierTab('survey')">Khảo sát</button>
+        <button id="dossierTab_photo" role="tab" aria-controls="dossierPanel_photo" aria-selected="false" tabindex="-1" onclick="switchDossierTab('photo')">Hình ảnh</button>
+        <button id="dossierTab_meds" role="tab" aria-controls="dossierPanel_meds" aria-selected="false" tabindex="-1" onclick="switchDossierTab('meds')">Thuốc</button>
+        <button id="dossierTab_notes" role="tab" aria-controls="dossierPanel_notes" aria-selected="false" tabindex="-1" onclick="switchDossierTab('notes')">Ghi chú</button>
       </div>
-    </div>
+      <div id="doctorDossierBody" class="df-dialog-body">
+        <div id="dossierPatientSummary" class="df-patient-summary"></div>
+        <section id="dossierPanel_survey" role="tabpanel" aria-labelledby="dossierTab_survey" tabindex="0"></section>
+        <section id="dossierPanel_photo" role="tabpanel" aria-labelledby="dossierTab_photo" tabindex="0" hidden></section>
+        <section id="dossierPanel_meds" role="tabpanel" aria-labelledby="dossierTab_meds" tabindex="0" hidden></section>
+        <section id="dossierPanel_notes" class="df-notes" role="tabpanel" aria-labelledby="dossierTab_notes" hidden><label for="doctorOrderInput">Nhận xét của bác sĩ</label><textarea id="doctorOrderInput" rows="6" maxlength="4000" placeholder="Nhập nhận xét và hướng xử lý cho hồ sơ này…" aria-describedby="doctorNoteHint doctorNoteError" oninput="document.getElementById('doctorNoteError').hidden = true"></textarea><p id="doctorNoteHint">Lưu ghi chú để đánh dấu hồ sơ đã xem.</p><p id="doctorNoteError" role="alert" hidden>Vui lòng nhập nhận xét trước khi hoàn tất.</p></section>
+      </div>
+      <footer class="df-dialog-footer"><button onclick="closePatientDossier()">Đóng</button><button class="df-save" onclick="submitDoctorOrder()">Lưu & hoàn tất</button></footer>
+    </dialog>
 
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden" role="status" aria-live="polite">
@@ -558,11 +231,17 @@
 
   </div>
 
+  <dialog id="patientConsultationDialog" class="pf-consultation-dialog" aria-labelledby="patientConsultationTitle" onclose="finishConsultationDialog()"></dialog>
+
   <!-- Pure JavaScript Controller -->
   <script src="app.js"></script>
+  <script src="doctor.js"></script>
   <script src="camera-quality.js"></script>
   <script src="patient-camera.js"></script>
   <script src="patient-results.js"></script>
+  <script src="patient-history.js"></script>
+  <script src="patient-navigation.js"></script>
+  <script src="patient-communication.js"></script>
   <script src="patient.js"></script>
 </body>
 </html>
