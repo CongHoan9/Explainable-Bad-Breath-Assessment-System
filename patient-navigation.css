@@ -58,7 +58,7 @@
 .pf-signin-state, .pf-settings-state { display: grid; place-items: center; flex: 1; min-height: 0; padding: 24px; }
 .pf-signin-state .pf-primary { width: min(100%, 250px); }
 .pf-content .pf-settings-state h2 { font-size: 19px; color: #64748b; }
-.auth-topbar { padding: 10px 14px 0; flex-shrink: 0; }
+.auth-topbar { padding: 10px 14px; flex-shrink: 0; }
 @media (max-height: 650px) {
   .auth-scroll-body { padding: 12px 18px; justify-content: flex-start; }
   .auth-header { margin-bottom: 12px; }
