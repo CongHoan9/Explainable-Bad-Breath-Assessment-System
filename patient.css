@@ -248,38 +248,10 @@
 .pf-result-tabs small { font-size: 8px; opacity: .7; }
 .pf-result-tabs [aria-selected="true"] { background: white; color: #0f766e; box-shadow: 0 2px 6px #254d3b0a; }
 .pf-content > .pf-result-shell { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; flex-shrink: 1; }
-.pf-result-carousel {
-    position: relative;
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-}
-
-.pf-result-caroausel::-webkit-scrollbar {
-    display: none;
-}
-
-.pf-result-panel {
-    flex: 0 0 100%;
-    min-width: 0;
-    overscroll-behavior-y: contain;
-    scroll-snap-align: start;
-    scroll-snap-stop: always; display: flex;
-    flex-direction: column;
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
-}
-
-.pf-result-panel > * {
-    margin-left: 20px;
-    width: calc(100% - 40px);
-    flex-shrink: 0;
-}
+.pf-result-carousel { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+.pf-result-carousel::-webkit-scrollbar { display: none; }
+.pf-result-panel { flex: 0 0 100%; min-width: 0; width: 100%; height: 100%; overflow-y: auto; overscroll-behavior-y: contain; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; gap: 15px; padding: 5px 3px 15px; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+.pf-result-panel > * { flex-shrink: 0; }
 .pf-level-summary { display: flex; align-items: center; flex-direction: column; padding: 23px 16px; border-radius: 20px; background: var(--level-bg); color: var(--level-color); text-align: center; }
 .pf-level-summary > .pf-badge { background: #ffffffa0; color: var(--level-color) !important; font-size: 8px; letter-spacing: .7px; padding: 6px 10px; }
 .pf-level-dial { display: grid; place-items: center; margin: 19px 0 16px; width: 116px; height: 116px; border-radius: 50%; background: #ffffff8c; box-shadow: 0 0 0 9px #ffffff40, 0 0 0 1px var(--level-color) inset; }
