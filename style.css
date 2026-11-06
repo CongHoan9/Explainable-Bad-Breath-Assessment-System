@@ -136,9 +136,9 @@ img, svg {
 .mobile-device-shell {
   width: 100%;
   max-width: 420px;
-  height: 94vh;
-  max-height: 890px;
-  min-height: 640px;
+  aspect-ratio: 9 / 16; 
+  height: auto; 
+  max-height: 90vh; 
   background-color: var(--calm-bg);
   border-radius: 42px;
   border: 10px solid #1e293b;
