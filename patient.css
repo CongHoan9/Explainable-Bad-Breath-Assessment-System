@@ -1666,7 +1666,7 @@
 }
 
 .pf-result-panel {
-    flex: 0 0 calc(100% - 20px);
+    flex: 0 0 100%;
     min-width: 0;
     overscroll-behavior-y: contain;
     scroll-snap-align: start;
@@ -1678,7 +1678,7 @@
 
 .pf-result-panel > * {
     margin-left: 20px;
-    width: calc(100% - 20px);
+    width: calc(100% - 40px);
     flex-shrink: 0;
 }
 
