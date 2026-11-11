@@ -39,7 +39,7 @@ function renderCaptureGuide() {
   return renderPatientStage(body, `<button class="pf-primary" onclick="acceptTongueCaptureGuide()">${patientIcon('camera')} Mở camera</button>${renderCaptureTestShortcut()}`, 'pf-stage-guide');
 }
 function renderCaptureTestShortcut() {
-  return `<button class="pf-secondary" onclick="bypassTongueCaptureForTest()" aria-label="Bỏ qua chụp ảnh để test">Bỏ qua để test</button>`;
+  return `<button class="pf-skip-photo" onclick="bypassTongueCaptureForTest()" aria-label="Dùng ảnh mẫu">Dùng ảnh mẫu</button>`;
 }
 function bypassTongueCaptureForTest() {
   if (!requirePatientSession('diagnosis')) return;
@@ -52,8 +52,8 @@ function bypassTongueCaptureForTest() {
   context.fillStyle = '#efddd0';
   context.beginPath(); context.ellipse(150, 160, 55, 65, 0, 0, Math.PI * 2); context.fill();
   context.fillStyle = '#115e59'; context.font = 'bold 16px sans-serif'; context.textAlign = 'center';
-  context.fillText('ẢNH KIỂM THỬ', 150, 380);
-  patientFlow.draft = { ...newAssessmentDraft(), guidanceAccepted: true, stage: 'questions', photo: canvas.toDataURL('image/png'), photoKind: 'test', confirmed: true };
+  context.fillText('ẢNH MINH HỌA', 150, 380);
+  patientFlow.draft = { ...newAssessmentDraft(), guidanceAccepted: true, stage: 'review', photo: canvas.toDataURL('image/png'), photoKind: 'test', captureSimulated: true, confirmed: false };
   patientFlow.resultId = null;
   patientFlow.resultSlide = 0;
   patientFlow.completing = false;
@@ -63,14 +63,14 @@ function bypassTongueCaptureForTest() {
 function renderAssessmentCapture() {
   const draft = patientFlow.draft;
   if (draft.stage === 'guide') return renderCaptureGuide();
-  if (draft.stage === 'review') return renderPatientStage(`<div class="pf-intro"><h2>${draft.photoKind === 'test' ? 'Ảnh kiểm thử' : 'Xác nhận ảnh'}</h2><p>Kiểm tra ảnh trước khi tiếp tục.</p></div><div class="pf-capture has-photo pf-photo-review"><img src="${escapePatientText(draft.photo)}" alt="${draft.photoKind === 'test' ? 'Ảnh kiểm thử' : 'Ảnh lưỡi đã chụp'}"></div>`, `<button class="pf-secondary" onclick="retakeTonguePhoto()">Chụp lại</button><button class="pf-primary" onclick="confirmTonguePhoto()">Dùng ảnh này ${patientIcon('arrow-right')}</button>`, 'pf-stage-review');
+  if (draft.stage === 'review') return renderPatientStage(`<div class="pf-intro"><h2>Xác nhận ảnh</h2><p>${draft.captureSimulated ? 'Ảnh mẫu để trải nghiệm ứng dụng.' : 'Kiểm tra ảnh trước khi tiếp tục.'}</p></div><div class="pf-capture has-photo pf-photo-review"><img src="${escapePatientText(draft.photo)}" alt="${draft.captureSimulated ? 'Ảnh lưỡi minh họa' : 'Ảnh lưỡi đã chụp'}"></div>`, `<button class="pf-secondary" onclick="retakeTonguePhoto()">Chụp lại</button><button class="pf-primary" onclick="confirmTonguePhoto()">Dùng ảnh này ${patientIcon('arrow-right')}</button>`, 'pf-stage-review');
   const body = `<div class="pf-live-camera" id="tongueCameraFrame"><video id="tongueCamera" class="${tongueCameraState.facing === 'user' ? 'is-mirrored' : ''}" autoplay muted playsinline aria-label="Camera chụp ảnh lưỡi"></video><div class="pf-camera-guide-region" id="cameraGuideRegion">${tongueGuideSvg()}</div>
       <div id="cameraCountdown" class="pf-capture-countdown" hidden><strong id="cameraCountdownNumber">3</strong><span>Giữ yên</span></div>
       <div id="cameraQualityPopup" class="pf-quality-popup" role="alert" hidden><span>${patientIcon('triangle-alert')}</span><div><strong id="cameraQualityTitle"></strong><p id="cameraQualityMessage"></p></div><button onclick="dismissCameraQualityPopup()" aria-label="Đóng thông báo chất lượng">${patientIcon('x')}</button></div>
       ${!patientFlow.stream ? `<div class="pf-camera-loading">${tongueCameraState.loading ? '<div class="pf-spinner"></div><span>Đang mở camera…</span>' : `${patientIcon('camera-off')}<span>Camera chưa hoạt động</span>`}</div>` : ''}</div>
     <div class="pf-camera-status pf-visually-hidden" id="cameraStatus" role="status" aria-live="polite">${patientFlow.stream ? 'Đặt lưỡi trong khung rồi bấm Chụp.' : tongueCameraState.loading ? 'Cho phép truy cập camera để tiếp tục.' : 'Mở lại camera để tiếp tục chụp ảnh.'}</div>
     ${patientFlow.error ? `<p class="pf-error" role="alert">${escapePatientText(patientFlow.error)}</p>` : ''}`;
-  const controls = `<div class="pf-camera-topbar"><button class="pf-camera-icon" onclick="renderPatientTab('home')" aria-label="Đóng camera">${patientIcon('x')}</button><button class="pf-camera-icon" onclick="showTongueCaptureGuide()" aria-label="Xem lại hướng dẫn">${patientIcon('circle-help')}</button></div><div class="pf-camera-dock"><button class="pf-camera-icon pf-camera-test" onclick="bypassTongueCaptureForTest()" aria-label="Bỏ qua chụp ảnh để test">${patientIcon('skip-forward')}<small>Test</small></button><button id="cameraShutter" class="pf-camera-shutter" aria-label="${patientFlow.stream ? 'Chụp' : tongueCameraState.loading ? 'Đang mở camera' : 'Mở lại camera'}" onclick="${patientFlow.stream ? 'armTongueCapture()' : 'openTongueCamera()'}" ${tongueCameraState.loading ? 'disabled' : ''}>${patientFlow.stream ? '<span class="pf-shutter-core"></span>' : patientIcon('rotate-cw')}</button>${patientFlow.stream ? `<button class="pf-camera-icon" onclick="switchTongueCamera()" aria-label="Đổi camera trước hoặc sau">${patientIcon('switch-camera')}</button>` : '<span></span>'}</div>`;
+  const controls = `<div class="pf-camera-topbar"><button class="pf-camera-icon" onclick="renderPatientTab('home')" aria-label="Đóng camera">${patientIcon('x')}</button><button class="pf-camera-icon" onclick="showTongueCaptureGuide()" aria-label="Xem lại hướng dẫn">${patientIcon('circle-help')}</button></div><div class="pf-camera-dock"><button class="pf-camera-icon pf-camera-test" onclick="bypassTongueCaptureForTest()" aria-label="Dùng ảnh mẫu">${patientIcon('skip-forward')}<small>Ảnh mẫu</small></button><button id="cameraShutter" class="pf-camera-shutter" aria-label="${patientFlow.stream ? 'Chụp' : tongueCameraState.loading ? 'Đang mở camera' : 'Mở lại camera'}" onclick="${patientFlow.stream ? 'armTongueCapture()' : 'openTongueCamera()'}" ${tongueCameraState.loading ? 'disabled' : ''}>${patientFlow.stream ? '<span class="pf-shutter-core"></span>' : patientIcon('rotate-cw')}</button>${patientFlow.stream ? `<button class="pf-camera-icon" onclick="switchTongueCamera()" aria-label="Đổi camera trước hoặc sau">${patientIcon('switch-camera')}</button>` : '<span></span>'}</div>`;
   return `<section class="pf-stage pf-stage-camera">${body}${controls}</section>`;
 }
 function showTongueCaptureGuide() {
@@ -230,8 +230,8 @@ function pollTongueCamera() {
       else {
         const rank = quality.sharpness / (1 + Math.abs(quality.brightness - 150) / 150 + quality.motion / 10);
         if (!tongueCameraState.best || rank > tongueCameraState.best.rank) {
-          const { brightness, sharpness, motion, coverage, containment } = quality;
-          tongueCameraState.best = { canvas: bestTongueCameraFrame(video), rank, quality: { brightness, sharpness, motion, coverage, containment } };
+          const { brightness, sharpness, motion, coverage, containment, ready, lighting, sharp, aligned, stable } = quality;
+          tongueCameraState.best = { canvas: bestTongueCameraFrame(video), rank, quality: { brightness, sharpness, motion, coverage, containment, ready, lighting, sharp, aligned, stable } };
         }
         if (tongueCameraState.clock.ready) { finishTongueCapture(); return; }
       }
@@ -319,6 +319,12 @@ function retakeTonguePhoto() {
 }
 function confirmTonguePhoto() {
   if (!patientFlow.draft?.photo || patientFlow.draft.stage !== 'review') return;
+  if (patientFlow.draft.photoKind !== 'test' && !AssessmentExplanation.usableImage(patientFlow.draft)) {
+    patientFlow.error = AssessmentExplanation.decide(patientFlow.draft).text;
+    patientFlow.draft.stage = 'quality-error';
+    renderPatientTab('diagnosis');
+    return;
+  }
   patientFlow.draft.confirmed = true;
   patientFlow.draft.stage = 'questions';
   renderPatientTab('diagnosis');

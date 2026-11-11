@@ -1,0 +1,313 @@
+/* Internal doctor workspace: desktop navigation, work queues and roomy detail views. */
+.df-screen, .df-dialog { --df-ink: #20362f; --df-muted: #788780; --df-line: #e4eae7; --df-green: #167461; color: var(--df-ink); }
+.df-screen [hidden], .df-dialog [hidden] { display: none !important; }
+.df-screen svg, .df-dialog svg { width: 19px; height: 19px; flex-shrink: 0; }
+.df-screen button:focus-visible, .df-screen a:focus-visible, .df-screen input:focus-visible, .df-screen select:focus-visible, .df-dialog button:focus-visible, .df-dialog input:focus-visible, .df-dialog textarea:focus-visible, .df-dialog select:focus-visible { outline: 3px solid #63c2a6; outline-offset: 3px; }
+body.doctor-mode { padding: 0; background: #f5f7f6; display: block; overflow: hidden; }
+body.doctor-mode .mobile-device-shell { max-width: none; width: 100%; height: 100dvh; min-height: 0; max-height: none; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: #f5f7f6; }
+body.doctor-mode .mobile-status-bar { display: none; }
+body.doctor-mode #screen-doctor:not(.hidden) { display: grid !important; grid-template-columns: 244px minmax(0, 1fr); grid-template-rows: 78px minmax(0, 1fr); min-height: 0; }
+.dw-sidebar { grid-column: 1; grid-row: 1 / -1; display: flex; flex-direction: column; background: #fff; border-right: 1px solid var(--df-line); padding: 30px 18px 18px; min-height: 0; overflow-y: auto; z-index: 2; }
+.dw-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; margin: 0 8px 46px; color: #234337; }
+.dw-logo > span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: #17735f; color: white; }
+.dw-logo strong { display: block; font-size: 24px; line-height: 1.2; letter-spacing: -1.2px; font-weight: 800; }
+.dw-logo strong span { color: #17816b; }
+.dw-logo small { display: block; font-size: 7px; letter-spacing: 1.6px; margin-top: 5px; color: #708176; font-weight: 700; }
+.dw-nav-label { font-size: 11px; letter-spacing: 1.35px; font-weight: 700; color: #708176; padding: 0 13px; margin-bottom: 13px; }
+.dw-navigation { display: flex; flex-direction: column; gap: 7px; }
+.dw-navigation button { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 11px 13px; border-radius: 8px; color: #76857d; font-size: 14px; font-weight: 600; text-align: left; transition: background .15s; }
+.dw-navigation button:hover { background: #f2f7f4; color: var(--df-green); }
+.dw-navigation button.active { background: #e8f4ed; color: #167461; }
+.dw-navigation button.active::before { content: ''; position: absolute; left: 0; height: 24px; width: 3px; border-radius: 0 4px 4px 0; background: #167461; }
+.dw-navigation small { display: grid; place-items: center; min-width: 22px; height: 21px; margin-left: auto; font-size: 12px; background: #edf1ee; border-radius: 5px; }
+.dw-sidebar-note { background: #f1f7f2; border-radius: 12px; padding: 18px; margin: auto 5px 24px; margin-top: max(50px, 10vh); }
+.dw-note-icon { display: grid; place-items: center; width: 35px; height: 35px; background: #e0efe3; border-radius: 10px; color: #4c8b67; margin-bottom: 15px; }
+.dw-sidebar-note strong { font-size: 15px; line-height: 1.7; }
+.dw-sidebar-note p { color: #708176; font-size: 12px; line-height: 1.9; margin-top: 9px; }
+.dw-sidebar-note button { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; color: #3d7f59; margin-top: 17px; min-height: 30px; }
+.dw-sidebar-note button svg { width: 14px; height: 14px; }
+.dw-sidebar-footer { display: flex; align-items: center; gap: 9px; border-top: 1px solid var(--df-line); padding-top: 18px; margin-top: auto; }
+.dw-sidebar-footer > div { flex: 1; min-width: 0; }
+.dw-sidebar-footer strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dw-sidebar-footer small { display: block; color: var(--df-muted); font-size: 11px; margin-top: 4px; }
+.dw-sidebar-footer button { display: grid; place-items: center; width: 30px; height: 35px; color: #708176; }
+.df-screen .dw-header { grid-column: 2; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 0 34px; background: white; border-bottom: 1px solid var(--df-line); }
+.dw-breadcrumb { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.dw-breadcrumb > span { display: flex; align-items: center; gap: 14px; color: #708176; font-size: 13px; }
+.dw-breadcrumb svg { width: 12px; height: 12px; }
+.dw-breadcrumb h1 { color: #3b5145; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.dw-header .pf-header-actions { gap: 14px; }
+.dw-header .pf-header-button { border: 0; color: #6d8173; border-radius: 9px; }
+.dw-header .dw-profile-trigger { background: #edf5ef; color: #55815e; }
+.dw-clinic { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #708176; margin-right: 8px; }
+.dw-clinic > span:first-child, .dw-status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5da280; }
+.dw-header-divider { height: 25px; width: 1px; background: var(--df-line); }
+.dw-mobile-menu { display: none; }
+.df-page { grid-column: 2; grid-row: 2; min-width: 0; min-height: 0; overflow-y: auto; padding: 32px 36px 40px; background: #f5f7f6; display: flex; flex-direction: column; gap: 26px; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #708176 transparent; }
+.df-page > * { flex-shrink: 0; min-width: 0; }
+.dw-page-title { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.df-eyebrow { font-size: 11px; letter-spacing: 1.3px; color: #708176; font-weight: 600; }
+.dw-page-title h2 { font-size: 25px; letter-spacing: -.7px; line-height: 1.4; margin: 7px 0 6px; font-weight: 700; }
+.dw-page-title p:last-child { font-size: 13px; line-height: 1.8; color: var(--df-muted); }
+.dw-primary, .dw-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 10px 17px; border-radius: 7px; font-size: 13px; font-weight: 600; flex-shrink: 0; line-height: 1.6; }
+.dw-primary { color: white; background: #167461; border: 1px solid #167461; }
+.dw-primary:hover { background: #105b4a; }
+.dw-primary:disabled { opacity: .45; cursor: default; }
+.dw-secondary { background: white; border: 1px solid var(--df-line); color: #738175; }
+.dw-secondary:hover { background: #edf5f0; }
+.dw-primary svg, .dw-secondary svg { width: 16px; height: 16px; }
+.df-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.df-stat { display: flex; flex-direction: column; text-align: left; padding: 20px; border: 1px solid var(--df-line); background: white; border-radius: 10px; box-shadow: 0 2px 5px #223c2d02; }
+.dw-stat-top { display: flex; align-items: center; justify-content: space-between; width: 100%; color: #708176; font-size: 13px; gap: 8px; }
+.dw-stat-icon { display: grid; place-items: center; width: 33px; height: 33px; border-radius: 9px; background: #eef5f1; color: #6a9c80; }
+.dw-stat-icon svg { width: 17px; height: 17px; }
+.df-stat--urgent .dw-stat-icon { background: #fff5e9; color: #c79b5a; }
+.df-stat--pending .dw-stat-icon { background: #edf3f7; color: #708176; }
+.df-stat strong { font-size: 29px; font-weight: 600; letter-spacing: -1px; color: var(--df-ink); margin: 9px 0 11px; line-height: 1.2; }
+.dw-stat-hint { display: flex; align-items: center; justify-content: space-between; gap: 7px; width: 100%; color: #708176; font-size: 11px; }
+.dw-stat-hint svg { width: 12px; height: 12px; }
+.dw-workload { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 28px 32px; border: 1px solid #daebe0; border-radius: 12px; background: linear-gradient(110deg, #eaf5ee, #f0f7f2); }
+.dw-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 1.05px; color: #6a9680; font-weight: 700; }
+.dw-tag svg { width: 13px; height: 13px; }
+.dw-workload h2 { font-size: 26px; font-weight: 600; letter-spacing: -.75px; margin: 12px 0 7px; }
+.dw-workload p { color: #708176; font-size: 13px; }
+.dw-workload button { margin-top: 20px; }
+.dw-progress-summary { display: flex; align-items: center; gap: 24px; padding-left: 36px; border-left: 1px solid #d6e6da; width: 38%; min-width: 260px; }
+.dw-progress-ring { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 102px; height: 102px; border-radius: 50%; background: radial-gradient(closest-side, #edf6f0 85%, transparent 87%), conic-gradient(#378870 var(--progress, 0%), #d5e5da 0); flex-shrink: 0; }
+.dw-progress-ring strong { font-size: 25px; color: #35785e; font-weight: 600; }
+.dw-progress-ring > span { font-size: 10px; color: #708176; }
+.dw-progress-summary > div:last-child { flex: 1; min-width: 0; }
+.dw-progress-summary > div > strong { display: block; font-size: 13px; }
+.dw-progress-summary > div > span { display: block; font-size: 12px; color: #708176; margin-top: 6px; }
+.dw-progress-summary progress { width: 100%; height: 5px; display: block; border: none; border-radius: 9px; background: #d6e5db; accent-color: #3a8b72; margin-top: 14px; overflow: hidden; }
+.dw-progress-summary progress::-webkit-progress-bar { background: #d6e5db; }
+.dw-progress-summary progress::-webkit-progress-value { background: #3a8b72; border-radius: 9px; }
+.dw-overview-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.dw-panel { background: white; border: 1px solid var(--df-line); border-radius: 11px; padding: 23px; min-width: 0; }
+.df-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 22px; }
+.df-section-heading h2 { font-size: 15px; font-weight: 600; }
+.df-section-heading p { margin-top: 5px; color: #708176; font-size: 12px; line-height: 1.7; }
+.df-text-button, .dw-icon-link { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; color: #47846a; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.df-text-button svg, .dw-icon-link svg { width: 14px; height: 14px; }
+.df-case-list { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.df-case { border: 1px solid var(--df-line); border-radius: 9px; padding: 16px; }
+.df-case-top { display: flex; align-items: center; gap: 11px; }
+.df-avatar { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 11px; background: #eef4ed; color: #6a9679; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.df-identity { min-width: 0; flex: 1; }
+.df-identity h3 { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.df-identity p { font-size: 11px; color: #708176; margin-top: 5px; }
+.df-status { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 5px; color: #b19b6b; background: #fbf7eb; white-space: nowrap; font-size: 11px; font-weight: 500; }
+.df-status::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.df-status--urgent { color: #c29163; background: #fff5e9; }
+.df-status--reviewed { color: #6d9979; background: #edf6ee; }
+.df-case-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 10px; margin-top: 12px; border-top: 1px solid #f0f3ef; }
+.df-case-bottom > span { color: #708176; font-size: 11px; }
+.dw-agenda-item { display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; padding: 16px 0; border-bottom: 1px solid #eef2ee; }
+.dw-agenda-item:last-child { border: 0; padding-bottom: 0; }
+.dw-agenda-item time { font: 500 11px var(--font-mono); color: #69937b; width: 40px; flex-shrink: 0; }
+.dw-agenda-item > span { display: flex; flex-direction: column; gap: 5px; flex: 1; border-left: 2px solid #c1dcc9; padding-left: 14px; min-width: 0; }
+.dw-agenda-item strong { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.dw-agenda-item small { color: #708176; font-size: 11px; }
+.dw-agenda-item > svg { color: #708176; width: 15px; height: 15px; }
+.dw-records-panel { padding: 0; overflow: hidden; }
+.dw-table-toolbar { padding: 20px 22px; display: flex; align-items: center; gap: 14px; }
+.df-search { position: relative; display: block; flex: 1; max-width: 430px; min-width: 150px; }
+.df-search > svg { position: absolute; left: 13px; top: 12px; width: 15px; height: 15px; color: #708176; }
+.df-search input { width: 100%; height: 40px; border: 1px solid var(--df-line); border-radius: 7px; padding: 9px 12px 9px 37px; font-size: 13px; color: var(--df-ink); background: #fff; }
+.dw-table-toolbar select { min-height: 40px; max-width: 180px; border: 1px solid var(--df-line); border-radius: 7px; padding: 8px 28px 8px 11px; background: white; color: #708176; font-size: 13px; }
+#doctorResultCount { margin-left: auto; color: #708176; font-size: 12px; white-space: nowrap; }
+.dw-table-wrap { position: relative; overflow-x: auto; scrollbar-width: thin; }
+.dw-patient-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; white-space: nowrap; }
+.dw-patient-table thead { background: #f8faf8; border-block: 1px solid var(--df-line); }
+.dw-patient-table th { padding: 15px 18px; font-size: 12px; color: #708176; font-weight: 500; }
+.dw-patient-table td { padding: 21px 18px; border-bottom: 1px solid #edf2ed; }
+.dw-patient-table tr:last-child td { border-bottom: 0; }
+.dw-patient-table tbody tr:hover { background: #fcfdfb; }
+.dw-table-person { display: flex; align-items: center; gap: 11px; }
+.dw-table-person strong { display: block; font-size: 13px; font-weight: 600; }
+.dw-table-person span:not(.df-avatar) { display: block; font-size: 11px; color: #708176; margin-top: 6px; }
+.dw-table-phone, .dw-table-submitted { color: #708176; font-size: 12px; }
+.dw-vsc-value { font-size: 14px; font-weight: 600; color: #57775d; }
+.dw-open-record { display: inline-flex; gap: 7px; align-items: center; color: #51876c; font-size: 12px; min-height: 36px; }
+.dw-open-record svg { width: 13px; height: 13px; }
+.dw-table-caption { padding: 16px 22px; border-top: 1px solid var(--df-line); display: flex; justify-content: space-between; gap: 15px; color: #708176; font-size: 11px; }
+.dw-table-caption > span { display: flex; gap: 7px; align-items: center; }
+.df-schedule-controls { display: flex; align-items: center; gap: 12px; }
+.df-schedule-controls > div:first-child { flex: 1; }
+.df-schedule-controls h3 { font-size: 14px; font-weight: 600; }
+.df-schedule-controls p { font-size: 12px; color: #708176; margin-top: 5px; }
+.df-schedule-controls input { min-height: 40px; padding: 8px 12px; border: 1px solid var(--df-line); border-radius: 7px; font-size: 14px; color: #6c8472; }
+.dw-week-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+.dw-week-strip button { display: flex; align-items: center; flex-direction: column; gap: 9px; padding: 13px 5px 10px; border: 1px solid transparent; border-radius: 8px; color: #708176; }
+.dw-week-strip button > span { font-size: 12px; }
+.dw-week-strip strong { font-size: 19px; font-weight: 500; }
+.dw-week-strip button > i { width: 4px; height: 4px; border-radius: 50%; background: transparent; }
+.dw-week-strip .has-appointments { background: #95baa2; }
+.dw-week-strip [aria-current] { background: #eaf5ee; border-color: #dcebe0; color: #397759; }
+.dw-schedule-list { gap: 17px; margin-top: -18px; }
+.df-appointment { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 18px; }
+.df-appointment-time { position: relative; padding-top: 23px; font: 500 13px var(--font-mono); color: #728d79; }
+.df-timeline-dot { display: block; margin: 12px 0 0 19px; width: 7px; height: 7px; border: 2px solid #8fb59b; border-radius: 50%; }
+.df-appointment-time::after { content: ''; position: absolute; width: 1px; top: 65px; bottom: -20px; left: 22px; background: #dce7dd; }
+.df-appointment:last-child .df-appointment-time::after { bottom: 15px; }
+.df-appointment-card { background: white; border: 1px solid var(--df-line); border-radius: 10px; padding: 22px; }
+.df-appointment-card h3 { font-size: 15px; font-weight: 600; margin: 10px 0 6px; }
+.df-appointment-card p { font-size: 13px; color: #708176; }
+.df-appointment-note { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 10px; }
+.df-appointment-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.df-appointment-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid #edf2ed; }
+.df-appointment-actions button { min-height: 34px; padding: 7px 12px; border-radius: 6px; font-size: 12px; background: #f2f7f3; color: #6b9378; }
+.df-appointment-actions button[data-appointment-status="cancelled"] { background: #fcf3ef; color: #bc8e7f; }
+.dw-profile-grid { display: grid; grid-template-columns: 285px minmax(0, 1fr); gap: 24px; max-width: 1000px; align-items: start; }
+.df-profile-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding-block: 32px; }
+.dw-profile-avatar { display: grid; place-items: center; width: 76px; height: 76px; background: #edf5ef; border-radius: 24px; color: #6d987a; margin-bottom: 5px; }
+.dw-profile-avatar svg { width: 32px; height: 32px; }
+.df-profile-card h2 { font-size: 17px; line-height: 1.6; font-weight: 600; overflow-wrap: anywhere; }
+.df-profile-card p { font-size: 12px; line-height: 1.8; color: #708176; overflow-wrap: anywhere; }
+.dw-profile-line { width: 100%; height: 1px; background: var(--df-line); margin-block: 7px; }
+.df-profile-card .dw-secondary { width: 100%; margin-top: 10px; }
+.df-form { display: flex; flex-direction: column; gap: 21px; }
+.df-form label { display: flex; flex-direction: column; gap: 9px; min-width: 0; font-size: 14px; color: #6a8170; font-weight: 500; }
+.df-form input, .df-form textarea, .df-form select { min-height: 43px; width: 100%; min-width: 0; padding: 11px 13px; border: 1px solid #dfe7e0; border-radius: 7px; background: white; font: inherit; font-size: 14px; color: #47624f; }
+.df-form textarea { resize: vertical; line-height: 1.7; min-height: 90px; max-height: 200px; }
+.df-form .df-section-heading { margin-bottom: 3px; }
+.dw-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-top: 1px solid #edf2ee; margin-top: 7px; padding-top: 20px; }
+.dw-form-footer p { font-size: 12px; color: #708176; }
+.df-form-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; }
+.df-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 36px 20px; gap: 10px; }
+.df-empty > svg { color: #708176; width: 30px; height: 30px; margin-bottom: 5px; }
+.df-empty h3 { font-size: 14px; font-weight: 500; }
+.df-empty p { font-size: 13px; color: #708176; }
+.dw-agenda-empty { padding: 16px 5px; }
+.dw-muted { color: #708176; font-size: 12px; }
+/* Large case viewer and appointment dialog sit outside the mobile presentation. */
+.df-dialog { width: min(840px, calc(100% - 40px)); max-width: none; max-height: calc(100dvh - 48px); padding: 0; margin: auto; border: 1px solid var(--df-line); border-radius: 15px; background: #fff; box-shadow: 0 24px 90px #142d252b; }
+.df-dialog[open] { display: flex; flex-direction: column; }
+.df-dialog::backdrop { background: #18392c66; backdrop-filter: blur(4px); }
+.df-dialog-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 24px 28px; border-bottom: 1px solid var(--df-line); }
+.df-dialog-header h2 { font-size: 22px; letter-spacing: -.5px; margin: 6px 0; font-weight: 600; }
+.df-dialog-header p:last-child { font-size: 13px; color: #708176; }
+.df-icon-button { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--df-line); border-radius: 9px; color: #708176; flex-shrink: 0; }
+.df-tabs { display: flex; gap: 24px; padding: 0 28px; border-bottom: 1px solid var(--df-line); flex-shrink: 0; }
+.df-tabs button { min-height: 49px; padding: 10px 4px; border-bottom: 2px solid transparent; color: #708176; font-size: 14px; }
+.df-tabs [aria-selected="true"] { color: #378163; border-color: #378163; font-weight: 600; }
+.df-dialog-body { min-height: 0; overflow-y: auto; padding: 25px 28px; overscroll-behavior: contain; }
+#doctorDossierBody { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: start; }
+.df-patient-summary { grid-column: 1; grid-row: 1; display: flex; align-items: flex-start; flex-wrap: wrap; gap: 14px; padding: 18px; background: #f2f7f2; border: 1px solid #e5eee5; border-radius: 10px; }
+#doctorDossierBody > section { grid-column: 2; grid-row: 1; min-width: 0; }
+.df-patient-summary .df-status { margin-left: auto; }
+.df-vsc { font-size: 28px; font-weight: 600; color: #588262; }
+.df-vsc small { font-size: 13px; font-weight: 400; }
+.df-summary-meta { width: 100%; border-top: 1px solid #dde9dc; padding-top: 13px; font-size: 12px; line-height: 2; color: #708176; }
+.df-summary-meta svg { display: inline; vertical-align: middle; width: 11px; height: 11px; }
+.df-detail-row { padding: 16px 0; border-bottom: 1px solid #edf2eb; }
+.df-detail-row:first-child { padding-top: 0; }
+.df-detail-row:last-child { border: 0; }
+.df-detail-row dt { font-size: 13px; color: #708176; margin-bottom: 7px; }
+.df-detail-row dd { font-size: 14px; line-height: 1.9; color: #61735d; overflow-wrap: anywhere; white-space: pre-wrap; }
+.df-photo img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 9px; background: #eff4ed; }
+.df-photo figcaption { margin-block: 10px 18px; font-size: 12px; color: #708176; }
+.df-notes label { display: block; font-size: 14px; font-weight: 600; color: #6b805f; margin-bottom: 11px; }
+.df-notes textarea { width: 100%; min-height: 250px; max-height: 350px; padding: 15px; resize: vertical; border: 1px solid var(--df-line); border-radius: 9px; font: inherit; font-size: 14px; line-height: 1.9; color: #607458; }
+.df-notes p { margin-top: 10px; font-size: 12px; line-height: 1.8; color: #708176; }
+.df-form-error, .df-notes #doctorNoteError { color: #be565d; font-size: 14px; }
+.df-dialog-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 28px; background: #fafcf9; border-top: 1px solid var(--df-line); flex-shrink: 0; }
+.df-dialog-footer button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 10px 18px; border-radius: 7px; color: #7c9176; background: #edf4e9; font-size: 14px; font-weight: 500; }
+.df-dialog-footer .df-save { color: white; background: #237d60; }
+#doctorAppointmentDialog { width: min(540px, calc(100% - 32px)); }
+.df-appointment-form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+#doctorNotificationPanel { right: 32px; width: 350px; max-width: calc(100% - 24px); }
+#doctorNotificationPanel .pf-notification-read-all:disabled { opacity: .4; cursor: default; }
+#doctorNotificationPanel:focus { outline: none; }
+@media (min-width: 1600px) { .df-page { padding: 40px 52px; } .dw-overview-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+@media (max-width: 1150px) {
+  body.doctor-mode #screen-doctor:not(.hidden) { grid-template-columns: 210px minmax(0, 1fr); }
+  .dw-sidebar { padding-inline: 12px; }
+  .df-page { padding: 27px 25px 35px; gap: 22px; }
+  .df-stats { gap: 12px; }
+  .df-stat { padding: 16px; }
+  .dw-stat-top { font-size: 12px; }
+  .dw-stat-hint { font-size: 10px; }
+  .dw-workload { padding: 24px; }
+  .dw-progress-summary { min-width: 220px; padding-left: 22px; gap: 15px; }
+  .dw-progress-ring { width: 85px; height: 85px; }
+  .dw-overview-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) and (min-width: 761px) {
+  body.doctor-mode #screen-doctor:not(.hidden) { grid-template-columns: 76px minmax(0, 1fr); }
+  .dw-sidebar { padding: 25px 12px; }
+  .dw-logo { margin: 0 auto 38px; }
+  .dw-logo > div, .dw-nav-label, .dw-navigation button > span, .dw-navigation small, .dw-sidebar-note, .dw-sidebar-footer { display: none; }
+  .dw-navigation button { justify-content: center; padding: 13px; }
+  .dw-breadcrumb > span { display: none; }
+}
+@media (max-width: 760px) {
+  body.doctor-mode #screen-doctor:not(.hidden) { grid-template-columns: minmax(0, 1fr); grid-template-rows: 68px minmax(0, 1fr); }
+  .dw-sidebar { display: none; }
+  .df-screen .dw-header { grid-column: 1; padding: 0 18px; gap: 12px; }
+  .dw-mobile-menu { display: grid; }
+  .dw-breadcrumb { flex: 1; }
+  .dw-breadcrumb > span, .dw-clinic, .dw-header-divider { display: none; }
+  .dw-header .pf-header-actions { gap: 5px; }
+  .df-page { grid-column: 1; padding: 23px 18px 30px; }
+  .dw-page-title { align-items: flex-start; }
+  .dw-page-title h2 { font-size: 23px; }
+  .dw-page-title .dw-primary, .dw-page-title .dw-secondary { font-size: 12px; padding-inline: 10px; }
+  .df-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dw-stat-top { font-size: 13px; }
+  .dw-stat-hint { font-size: 11px; }
+  .dw-workload { align-items: flex-start; flex-direction: column; padding: 22px; }
+  .dw-progress-summary { width: 100%; min-width: 0; padding: 20px 0 0; border-left: 0; border-top: 1px solid #d6e6da; }
+  .dw-overview-grid { gap: 20px; }
+  .dw-panel { padding: 19px; }
+  .dw-records-panel { padding: 0; }
+  .dw-table-toolbar { flex-wrap: wrap; padding: 17px; gap: 10px; }
+  .df-search { max-width: none; flex-basis: 100%; }
+  .dw-table-toolbar select { flex: 1; }
+  .dw-table-caption > span:last-child { display: none; }
+  .dw-profile-grid { grid-template-columns: 1fr; }
+  .df-profile-card { padding: 25px; }
+  .df-schedule-controls { flex-wrap: wrap; }
+  .df-schedule-controls > div:first-child { flex-basis: 100%; margin-bottom: 8px; }
+  .df-schedule-controls > label { flex: 1; }
+  .df-schedule-controls input { width: 100%; }
+  .dw-week-strip { gap: 4px; }
+  .dw-week-strip strong { font-size: 16px; }
+  .df-appointment { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
+  .df-appointment-card { padding: 18px; }
+  .df-appointment-time { font-size: 13px; }
+  #doctorDossierBody { display: flex; flex-direction: column; gap: 24px; padding: 20px; }
+  #doctorDossierBody > section { width: 100%; }
+  .df-patient-summary { width: 100%; }
+  .df-dialog-header { padding: 20px; }
+  .df-tabs { gap: 19px; padding-inline: 20px; }
+  .df-dialog-footer { padding-inline: 20px; }
+  .df-dialog { max-height: calc(100dvh - 24px); width: calc(100% - 24px); }
+  #doctorNotificationPanel { right: 12px; }
+}
+@media (max-width: 380px) {
+  .df-page { padding-inline: 14px; }
+  .dw-page-title { flex-wrap: wrap; gap: 12px; }
+  .dw-page-title > button { min-height: 36px; }
+  .dw-form-footer { flex-wrap: wrap; }
+  .dw-stat-hint { font-size: 10px; }
+  .df-stat { padding: 14px; }
+  .df-section-heading { flex-wrap: wrap; gap: 6px; }
+  .df-identity h3 { font-size: 13px; }
+  .df-identity p { font-size: 10px; }
+  .df-status { font-size: 10px; padding-inline: 6px; }
+  .df-case { padding: 12px; }
+  .df-tabs { gap: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .dw-navigation button { transition: none; } }
+
+.dw-breadcrumb h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dw-header .pf-header-actions { flex-shrink: 0; }
+.dw-progress-summary .dw-progress-ring strong { font-size: 27px; }
+.dw-progress-summary .dw-progress-ring > span { font-size: 10px; }
+.df-status { color: #8d753e; }
+.df-status--urgent { color: #a16b3c; }
+.df-status--reviewed { color: #4d805b; }
+.df-assessment-result { margin-top: 8px; font-size: 21px; line-height: 1.4; font-weight: 700; overflow-wrap: anywhere; }
+.df-shared-explanation { grid-column: 1 / -1; color: #52665d; font-size: 12px; line-height: 1.7; }
+.dw-vsc-value { font-size: 12px; overflow-wrap: anywhere; }

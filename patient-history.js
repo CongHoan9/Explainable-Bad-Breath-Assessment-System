@@ -14,9 +14,10 @@ function historyDateKey(timestamp) {
 function filterAssessmentHistory(records, query, level, selectedDate = '') {
   const words = normalizeHistorySearch(query).split(' ').map(word => word.replace(/^#/, '')).filter(Boolean);
   return records.filter(record => {
-    if (level !== 'all' && record.level !== Number(level)) return false;
+    const decision = AssessmentExplanation.decide(record);
+    if (level !== 'all' && decision.level !== Number(level)) return false;
     if (selectedDate && historyDateKey(record.createdAt) !== selectedDate) return false;
-    const text = normalizeHistorySearch(`${record.id} ${ASSESSMENT_LEVELS[record.level].name} mức độ ${record.level} mức${record.level}`);
+    const text = normalizeHistorySearch(`${record.id} ${decision.title} ${decision.canShowLevel ? `mức độ ${decision.level} mức${decision.level}` : 'chưa kết luận'}`);
     return words.every(word => text.includes(word));
   }).sort((a, b) => b.createdAt - a.createdAt);
 }
@@ -25,12 +26,13 @@ function getHistoryDetailRecord() {
   return patientFlow.history.find(record => record.id === patientHistoryState.selectedId);
 }
 function renderHistoryCard(record) {
-  const level = ASSESSMENT_LEVELS[record.level];
+  const decision = AssessmentExplanation.decide(record);
+  const level = { name: decision.title };
   const label = `Xem kết quả ${record.id}, ${level.name}, ${formatAssessmentDate(record.createdAt)}`;
-  return `<button class="pf-history-record pf-level--${record.level}" data-record-id="${escapePatientText(record.id)}" onclick="viewAssessment(this.dataset.recordId)" aria-label="${escapePatientText(label)}">
-    <img class="pf-history-record__photo" src="${escapePatientText(record.photo)}" alt="" loading="lazy">
+  return `<button class="pf-history-record ${decision.canShowLevel ? `pf-level--${decision.level}` : 'pf-level--2'}" data-record-id="${escapePatientText(record.id)}" onclick="viewAssessment(this.dataset.recordId)" aria-label="${escapePatientText(label)}">
+    ${record.photoKind === 'test' && !record.captureSimulated ? `<span class="pf-history-record__photo pf-history-record__photo--empty" aria-hidden="true">${patientIcon('clipboard-list')}</span>` : `<img class="pf-history-record__photo" src="${escapePatientText(record.photo)}" alt="" loading="lazy">`}
     <span class="pf-history-record__body"><strong class="pf-history-record__title">${level.name}</strong><time class="pf-history-record__date" datetime="${new Date(record.createdAt).toISOString()}">${formatAssessmentDate(record.createdAt)}</time><span class="pf-history-record__id">#${escapePatientText(record.id.toUpperCase())}</span></span>
-    <span class="pf-history-record__level" aria-label="Mức độ ${record.level} trên 3">${record.level}<small>/3</small></span>
+    <span class="pf-history-record__level" aria-label="${decision.canShowLevel ? `Mức độ ${decision.level} trên 3` : 'Chưa kết luận'}">${decision.canShowLevel ? `${decision.level}<small>/3</small>` : '—'}</span>
     <span class="pf-history-record__arrow">${patientIcon('chevron-right')}</span>
   </button>`;
 }

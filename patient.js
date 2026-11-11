@@ -22,17 +22,17 @@ function escapePatientText(value) {
 }
 function patientIcon(name) { return `<i data-lucide="${name}" aria-hidden="true"></i>`; }
 function refreshPatientIcons() { if (window.lucide) window.lucide.createIcons(); }
-function patientStorageKey() { return 'breath-assessments-v1:' + encodeURIComponent(patientFlow.account); }
 
 function initPatientApp() {
   stopPatientCamera();
   resetPatientHistory();
+  resetPatientCommunication();
   const signedIn = isPatientAuthenticated();
   patientFlow.account = signedIn ? appState.currentUser.username.trim().toLocaleLowerCase('vi') : '';
   patientFlow.history = [];
   patientFlow.profile = { name: signedIn ? appState.currentUser.username : '', phone: signedIn ? appState.currentUser.phone : '', age: '', gender: '' };
   try {
-    const saved = signedIn ? JSON.parse(localStorage.getItem(patientStorageKey()) || 'null') : null;
+    const saved = signedIn ? SharedDataStore.patient(patientFlow.account) : null;
     if (saved && Array.isArray(saved.history)) {
       patientFlow.history = saved.history.filter(isValidAssessment).slice(0, 12);
       if (saved.profile && typeof saved.profile === 'object') {
@@ -40,6 +40,7 @@ function initPatientApp() {
           if (typeof saved.profile[key] === 'string') patientFlow.profile[key] = saved.profile[key];
         }
       }
+      restorePatientCommunication(saved);
     }
   } catch { /* An unavailable or damaged local store must not prevent using the app. */ }
   patientFlow.draft = null;
@@ -59,13 +60,10 @@ function isValidAssessment(record) {
 }
 function persistPatientData() {
   if (!isPatientAuthenticated()) return false;
-  try {
-    localStorage.setItem(patientStorageKey(), JSON.stringify({ profile: patientFlow.profile, history: patientFlow.history }));
-    return true;
-  } catch { return false; }
+  return SharedDataStore.savePatient(patientFlow.account, { profile: patientFlow.profile, history: patientFlow.history, consultations: patientCommunication.consultations, readNotifications: patientCommunication.readIds });
 }
 function newAssessmentDraft() {
-  return { stage: 'guide', guidanceAccepted: false, photo: '', photoKind: '', brightness: 0, confirmed: false, questionIndex: 0, answers: Array(ASSESSMENT_QUESTIONS.length).fill(null) };
+  return { stage: 'guide', guidanceAccepted: false, photo: '', photoKind: '', brightness: 0, confirmed: false, questionIndex: 0, answers: Array(ASSESSMENT_QUESTIONS.length).fill(null), tongueRegion: 'unspecified', warningSigns: [], warningScreened: false };
 }
 function startAssessment() {
   if (!requirePatientSession('diagnosis')) return;
@@ -80,12 +78,15 @@ function startAssessment() {
 function renderPatientTab(tab) {
   if (!['home', 'diagnosis', 'history', 'profile', 'information', 'settings'].includes(tab)) return;
   if (['diagnosis', 'profile', 'information'].includes(tab) && !requirePatientSession(tab)) return;
+  closeConsultationDialog(false);
   closePatientMenus();
   if (tab !== 'diagnosis') stopPatientCamera();
+  if (tab === 'information' && patientFlow.tab !== 'information') patientNavigation.informationParent = patientFlow.tab === 'profile' ? 'profile' : 'home';
   patientFlow.tab = tab;
   const titles = { home: 'Trang chủ', diagnosis: 'Chẩn đoán', history: 'Lịch sử', profile: 'Hồ sơ cá nhân', information: 'Thông tin cá nhân', settings: 'Cài đặt' };
   const historyDetail = tab === 'history' && Boolean(getHistoryDetailRecord());
   document.getElementById('patientScreenTitle').textContent = historyDetail ? 'Chi tiết kết quả' : titles[tab];
+  refreshPatientChrome();
   document.querySelectorAll('[data-patient-tab]').forEach(button => {
     const selected = button.dataset.patientTab === (tab === 'information' ? 'profile' : tab);
     button.classList.toggle('active', selected);
@@ -110,29 +111,35 @@ function renderPatientTab(tab) {
 }
 function renderPatientHome() {
   const doctor = appState.currentDoctor;
+  const signedIn = isPatientAuthenticated();
+  const name = signedIn ? patientFlow.profile.name.trim().split(/\s+/).pop() : 'bạn';
+  const latest = patientFlow.history[0];
   const steps = [['camera', 'Chụp ảnh lưỡi'], ['list-checks', 'Trả lời câu hỏi'], ['chart-no-axes-column', 'Xem kết quả']];
   return `<div class="pf-home">
+    <div class="pf-home-welcome"><div><p>CHĂM SÓC BẢN THÂN MỖI NGÀY</p><h2>Xin chào, ${escapePatientText(name)} <span aria-hidden="true">✦</span></h2><span>Hôm nay, hơi thở của bạn thế nào?</span></div><span class="pf-welcome-icon">${patientIcon('sprout')}</span></div>
     <section class="pf-hero pf-home-hero" aria-labelledby="homeHeroTitle">
       <span class="pf-hero-tag">${patientIcon('scan-line')} Đánh giá hơi thở</span>
-      <h2 id="homeHeroTitle">Chẩn đoán hôi miệng</h2>
-      <p>Chụp ảnh lưỡi, trả lời câu hỏi và tìm hiểu mức độ hôi miệng của bạn.</p>
+      <h2 id="homeHeroTitle">Tự tin hơn trong<br>từng lời nói.</h2>
+      <p>Hiểu hơn về hơi thở qua ảnh lưỡi, 5 câu hỏi và các dấu hiệu cần lưu ý.</p>
       <span class="pf-hero-art">${patientIcon('scan-line')}</span>
-      <button class="pf-primary pf-hero-button" onclick="startAssessment()">Bắt đầu chẩn đoán ${patientIcon('arrow-right')}</button>
+      <button class="pf-primary pf-hero-button" onclick="startAssessment()">Bắt đầu đánh giá ${patientIcon('arrow-right')}</button>
     </section>
     <section class="pf-card pf-home-process" aria-labelledby="homeProcessTitle">
-      <div class="pf-section-title"><h3 id="homeProcessTitle">Quy trình chẩn đoán</h3><span>3 bước</span></div>
+      <div class="pf-section-title"><h3 id="homeProcessTitle">Một hành trình, 3 bước</h3><span>Đơn giản & dễ hiểu</span></div>
       <ol class="pf-home-steps">${steps.map(([icon, title], index) => `<li><span>${patientIcon(icon)}</span><small>0${index + 1}</small><strong>${title}</strong></li>`).join('')}</ol>
     </section>
+    ${signedIn && latest ? `<section class="pf-home-latest"><div class="pf-section-title"><h3>Đánh giá gần nhất</h3><button class="pf-text-button" onclick="returnToPatientHistory()">Xem lịch sử ${patientIcon('arrow-right')}</button></div>${renderHistoryCard(latest)}</section>` : `<div class="pf-home-shortcuts"><button onclick="returnToPatientHistory()"><span>${patientIcon('history')}</span><strong>Lịch sử đánh giá</strong>${patientIcon('chevron-right')}</button><button onclick="renderPatientTab('profile')"><span>${patientIcon('user-round')}</span><strong>Hồ sơ của bạn</strong>${patientIcon('chevron-right')}</button></div>`}
     <section class="pf-card pf-home-doctor" aria-labelledby="homeDoctorTitle">
-      <div class="pf-section-title"><h3 id="homeDoctorTitle">Bác sĩ</h3>${patientIcon('stethoscope')}</div>
+      <div class="pf-section-title"><h3 id="homeDoctorTitle">Bác sĩ đồng hành</h3>${patientIcon('stethoscope')}</div>
       <div class="pf-home-doctor__body"><span class="pf-home-doctor__avatar">${patientIcon('user-round')}</span><div><h4>${escapePatientText(doctor.name)}</h4><p>${escapePatientText(doctor.department)}</p><span class="pf-home-doctor__location">${patientIcon('map-pin')}${escapePatientText(doctor.clinicRoom)}</span></div></div>
     </section>
+    <button class="pf-doctor-portal" onclick="beginDoctorSignIn()">${patientIcon('stethoscope')} Cổng làm việc dành cho bác sĩ ${patientIcon('arrow-up-right')}</button>
   </div>`;
 }
 function renderPatientProfile() {
   const latest = patientFlow.history[0];
   return `<div class="pf-greeting"><h2>Xin chào, ${escapePatientText(patientFlow.profile.name.trim().split(/\s+/).pop())}</h2><button class="pf-profile-edit" onclick="renderPatientTab('information')" aria-label="Chỉnh sửa thông tin cá nhân">${patientIcon('user-pen')}</button></div>
-    <section class="pf-hero"><h2>Đánh giá hơi thở</h2><p>Chụp ảnh lưỡi và trả lời 5 câu hỏi.</p><button class="pf-primary pf-hero-button" onclick="startAssessment()">Bắt đầu chẩn đoán ${patientIcon('arrow-right')}</button></section>
+    <section class="pf-hero"><h2>Đánh giá hơi thở</h2><p>Chụp ảnh lưỡi, trả lời 5 câu hỏi và bổ sung dấu hiệu cần lưu ý.</p><button class="pf-primary pf-hero-button" onclick="startAssessment()">Bắt đầu chẩn đoán ${patientIcon('arrow-right')}</button></section>
     ${isPatientAuthenticated() ? `<section><div class="pf-section-title"><h3>Đánh giá gần nhất</h3></div>${latest ? renderHistoryCard(latest) : `<div class="pf-card pf-empty-inline">${patientIcon('clipboard-list')}<div><strong>Chưa có kết quả</strong><p>Bắt đầu chẩn đoán để lưu lần đánh giá đầu tiên.</p></div></div>`}</section>` : ''}`;
 }
 function renderFlowSteps(step) {
@@ -147,14 +154,47 @@ function renderAssessment() {
   if (!patientFlow.draft) patientFlow.draft = newAssessmentDraft();
   if (patientFlow.completing) return `${renderFlowSteps(3)}<div class="pf-processing" role="status"><div class="pf-spinner"></div><h2>Đang tổng hợp kết quả</h2><p>Chuẩn bị ảnh và phần giải thích của bạn…</p></div>`;
   if (patientFlow.draft.stage === 'questions') return renderAssessmentQuestion();
+  if (patientFlow.draft.stage === 'safety') return renderAssessmentSafety();
+  if (patientFlow.draft.stage === 'quality-error') return renderPatientStage(`<div class="pf-intro"><h2>Ảnh chưa đạt yêu cầu</h2></div><p class="pf-error" role="alert">${escapePatientText(patientFlow.error)}</p>`, '<button class="pf-secondary" onclick="renderPatientTab(\'home\')">Trang chủ</button><button class="pf-primary" onclick="retakeTonguePhoto()">Chụp lại ảnh</button>', 'pf-stage-quality-error');
   return renderAssessmentCapture();
+}
+function renderAssessmentSafety() {
+  const draft = patientFlow.draft;
+  const body = `<div class="pf-intro"><h2>Thông tin bổ sung</h2><p>Chọn theo những gì bạn đang nhận thấy.</p></div>
+    <label class="pf-safety-region" for="tongueRegion">Vùng có rêu lưỡi<select id="tongueRegion" onchange="patientFlow.draft.tongueRegion = this.value">${Object.entries(AssessmentExplanation.REGIONS).map(([value, label]) => `<option value="${value}" ${draft.tongueRegion === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><p class="pf-muted">Vị trí do bạn mô tả, không phải phát hiện từ ảnh.</p>
+    <fieldset class="pf-warning-options"><legend>Bạn có dấu hiệu nào sau đây?</legend><p>Chọn tất cả dấu hiệu đang có.</p>${Object.entries(AssessmentExplanation.WARNINGS).map(([value, label]) => `<label><input type="checkbox" value="${value}" ${draft.warningSigns.includes(value) ? 'checked' : ''} onchange="setAssessmentWarning(this.value, this.checked)"><span>${label}</span></label>`).join('')}<label><input id="warningNone" type="checkbox" ${draft.warningScreened && !draft.warningSigns.length ? 'checked' : ''} onchange="setAssessmentWarning('none', this.checked)"><span>Không có các dấu hiệu trên</span></label></fieldset><p class="pf-answer-status" role="status" aria-live="polite">${assessmentAnswerStatus(draft)}</p>`;
+  return renderPatientStage(body, `<button class="pf-secondary" onclick="returnToAssessmentQuestions()">Quay lại</button><button id="assessmentSafetySubmit" class="pf-primary" onclick="completeAssessment()" ${draft.warningScreened ? '' : 'disabled'}>Xem kết quả ${patientIcon('arrow-right')}</button>`, 'pf-stage-safety');
+}
+function returnToAssessmentQuestions() {
+  patientFlow.draft.stage = 'questions';
+  renderPatientTab('diagnosis');
+}
+function assessmentAnswerStatus(draft) {
+  return draft.warningSigns.length ? `Đã chọn ${draft.warningSigns.length} mục.` : draft.warningScreened ? 'Đã ghi nhận câu trả lời.' : 'Chọn mục phù hợp để tiếp tục.';
+}
+function setAssessmentWarning(id, checked) {
+  const draft = patientFlow.draft;
+  if (!draft || draft.stage !== 'safety' || (id !== 'none' && !Object.hasOwn(AssessmentExplanation.WARNINGS, id))) return;
+  if (id === 'none') {
+    draft.warningSigns = [];
+    draft.warningScreened = checked;
+    document.querySelectorAll('.pf-warning-options input:not(#warningNone)').forEach(input => { input.checked = false; });
+  } else {
+    draft.warningSigns = [...new Set(draft.warningSigns.filter(value => value !== id).concat(checked ? [id] : []))];
+    draft.warningScreened = draft.warningSigns.length > 0;
+    document.getElementById('warningNone').checked = false;
+  }
+  document.getElementById('assessmentSafetySubmit').disabled = !draft.warningScreened;
+  document.querySelector('.pf-answer-status').textContent = assessmentAnswerStatus(draft);
 }
 function renderAssessmentQuestion() {
   const draft = patientFlow.draft, index = draft.questionIndex, question = ASSESSMENT_QUESTIONS[index];
-  const body = `<div class="pf-question-top"><span>Câu ${index + 1}/${ASSESSMENT_QUESTIONS.length}</span>${draft.photoKind === 'test' ? '<span class="pf-badge">Kiểm thử</span>' : ''}</div><div class="pf-question-progress"><span style="width:${(index + 1) / ASSESSMENT_QUESTIONS.length * 100}%"></span></div>
-    <div class="pf-question-heading"><h2>${question.title}</h2>${index === 3 ? `<img src="${escapePatientText(draft.photo)}" alt="Ảnh lưỡi để đối chiếu">` : ''}</div>
-    <div class="pf-options" role="group" aria-label="${escapePatientText(question.title)}">${question.options.map((option, answer) => `<button class="pf-option ${draft.answers[index] === answer ? 'selected' : ''}" aria-pressed="${draft.answers[index] === answer}" onclick="selectAssessmentAnswer(${answer})"><span>${escapePatientText(option)}</span><span class="pf-radio">${draft.answers[index] === answer ? '✓' : ''}</span></button>`).join('')}</div>`;
-  return renderPatientStage(body, `<div class="pf-question-actions"><button class="pf-secondary" onclick="previousAssessmentQuestion()">${patientIcon('arrow-left')} ${index === 0 ? 'Xem ảnh' : 'Quay lại'}</button><button class="pf-primary" onclick="nextAssessmentQuestion()" ${draft.answers[index] === null ? 'disabled' : ''}>${index === ASSESSMENT_QUESTIONS.length - 1 ? 'Kết quả' : 'Tiếp tục'} ${patientIcon('arrow-right')}</button></div>`, 'pf-stage-questions');
+  const hasPhoto = draft.photoKind !== 'test' || draft.captureSimulated === true;
+  const title = index === 3 && !hasPhoto ? 'Bạn thấy rêu lưỡi như thế nào?' : question.title;
+  const body = `<div class="pf-question-top"><span>Câu ${index + 1}/${ASSESSMENT_QUESTIONS.length}</span></div><div class="pf-question-progress"><span style="width:${(index + 1) / ASSESSMENT_QUESTIONS.length * 100}%"></span></div>
+    <div class="pf-question-heading"><h2>${title}</h2>${index === 3 && hasPhoto ? `<img src="${escapePatientText(draft.photo)}" alt="${draft.captureSimulated ? 'Ảnh mẫu để đối chiếu' : 'Ảnh lưỡi để đối chiếu'}">` : ''}</div>
+    <div class="pf-options" role="group" aria-label="${escapePatientText(title)}">${question.options.map((option, answer) => `<button class="pf-option ${draft.answers[index] === answer ? 'selected' : ''}" aria-pressed="${draft.answers[index] === answer}" onclick="selectAssessmentAnswer(${answer})"><span>${escapePatientText(option)}</span><span class="pf-radio">${draft.answers[index] === answer ? '✓' : ''}</span></button>`).join('')}</div>`;
+  return renderPatientStage(body, `<div class="pf-question-actions"><button class="pf-secondary" onclick="previousAssessmentQuestion()">${patientIcon('arrow-left')} ${index === 0 && hasPhoto ? 'Xem ảnh' : 'Quay lại'}</button><button class="pf-primary" onclick="nextAssessmentQuestion()" ${draft.answers[index] === null ? 'disabled' : ''}>${index === ASSESSMENT_QUESTIONS.length - 1 ? 'Kết quả' : 'Tiếp tục'} ${patientIcon('arrow-right')}</button></div>`, 'pf-stage-questions');
 }
 function selectAssessmentAnswer(answer) {
   const draft = patientFlow.draft;
@@ -172,7 +212,7 @@ function previousAssessmentQuestion() {
   if (patientFlow.completing) return;
   const draft = patientFlow.draft;
   if (!draft) return;
-  if (draft.questionIndex === 0) draft.stage = 'review';
+  if (draft.questionIndex === 0) draft.stage = draft.photoKind === 'test' && !draft.captureSimulated ? 'guide' : 'review';
   else draft.questionIndex--;
   renderPatientTab('diagnosis');
 }
@@ -180,25 +220,32 @@ function nextAssessmentQuestion() {
   const draft = patientFlow.draft;
   if (!draft?.confirmed || draft.answers[draft.questionIndex] === null || patientFlow.completing) return;
   if (draft.questionIndex < ASSESSMENT_QUESTIONS.length - 1) { draft.questionIndex++; renderPatientTab('diagnosis'); }
-  else completeAssessment();
+  else { draft.stage = 'safety'; renderPatientTab('diagnosis'); }
 }
 function evaluateAssessment(answers) {
-  if (answers.length !== ASSESSMENT_QUESTIONS.length || !answers.every(answer => Number.isInteger(answer) && answer >= 0 && answer <= 3)) throw new Error('Incomplete answers');
+  const result = AssessmentExplanation.questionnaireResult(answers);
+  if (!result) throw new Error('Incomplete answers');
   // Presentation rule only; these cutoffs are not a validated diagnostic scale.
-  const score = answers.reduce((sum, answer) => sum + answer, 0);
-  return { score, level: Math.min(3, Math.floor((score + 1) / 4)) };
+  return result;
 }
 async function completeAssessment() {
   const draft = patientFlow.draft;
-  if (!isPatientAuthenticated() || !draft?.confirmed || !draft.photo || draft.answers.includes(null) || patientFlow.completing) return;
+  if (!isPatientAuthenticated() || !draft?.confirmed || !draft.photo || draft.answers.includes(null) || !draft.warningScreened || patientFlow.completing) return;
+  if (draft.photoKind !== 'test' && !AssessmentExplanation.usableImage(draft)) {
+    patientFlow.error = AssessmentExplanation.decide(draft).text;
+    draft.stage = 'quality-error';
+    renderPatientTab('diagnosis');
+    return;
+  }
   patientFlow.completing = true;
   renderPatientTab('diagnosis');
   await new Promise(resolve => setTimeout(resolve, 650));
   if (draft !== patientFlow.draft || !patientFlow.completing) return;
   const createdAt = Date.now();
-  const record = { id: createdAt.toString(36) + '-' + Math.random().toString(36).slice(2, 8), createdAt, photo: draft.photo, photoKind: draft.photoKind, brightness: draft.brightness, captureQuality: draft.captureQuality, answers: [...draft.answers], ...evaluateAssessment(draft.answers) };
+  const record = { id: createdAt.toString(36) + '-' + Math.random().toString(36).slice(2, 8), createdAt, photo: draft.photo, photoKind: draft.photoKind, captureSimulated: draft.captureSimulated === true, brightness: draft.brightness, captureQuality: draft.captureQuality, answers: [...draft.answers], tongueRegion: draft.tongueRegion, warningSigns: [...draft.warningSigns], warningScreened: draft.warningScreened, modelOutput: null, explanationVersion: 1, ...evaluateAssessment(draft.answers) };
   patientFlow.history.unshift(record);
   patientFlow.history = patientFlow.history.slice(0, 12);
+  prunePatientCommunication();
   patientFlow.resultId = record.id;
   patientFlow.completing = false;
   patientFlow.overlay = true;

@@ -1,0 +1,99 @@
+/* Customer mobile experience and the role-specific application shell. */
+body { background: #edf3ef; padding: 24px; }
+.mobile-device-shell { max-width: 414px; height: calc(100dvh - 48px); max-height: 900px; min-height: 0; border: 1px solid #dce7de; border-radius: 30px; box-shadow: 0 18px 60px #28493513; background: #f7faf7; }
+.mobile-status-bar { display: none; }
+body:not(.doctor-mode):not(.auth-doctor) .mobile-device-shell { max-width: 420px; border: 10px solid #1e293b; border-radius: 42px; box-shadow: 0 25px 65px #162c3529, 0 0 0 1px #ffffff80; }
+body:not(.doctor-mode):not(.auth-doctor) .mobile-device-shell:not(.is-camera-view) .mobile-status-bar { display: flex; }
+.patient-desktop-intro { display: none; }
+.patient-wordmark { display: flex; align-items: center; color: #264c39; text-decoration: none; font-size: 32px; font-weight: 800; letter-spacing: -1.5px; }
+.patient-wordmark > span:first-child { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 13px; background: #1b7e64; color: white; margin-right: 11px; }
+.patient-wordmark svg { width: 24px; height: 24px; }
+.patient-wordmark > span:last-child { color: #258765; }
+.patient-intro-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.8px; color: #6b957a; margin: 54px 0 17px; }
+.patient-desktop-intro h1 { color: #284d39; font-size: 42px; line-height: 1.35; letter-spacing: -1.7px; font-weight: 600; }
+.patient-desktop-intro > p:last-of-type { max-width: 320px; color: #74866e; line-height: 1.9; font-size: 13px; margin-top: 20px; }
+.patient-intro-steps { display: flex; flex-direction: column; gap: 17px; margin: 33px 0 48px; }
+.patient-intro-steps > span { display: flex; align-items: center; gap: 12px; color: #6e8b77; font-size: 12px; }
+.patient-intro-steps svg { width: 17px; height: 17px; color: #6f9d7e; }
+.patient-doctor-entry { display: flex; align-items: center; gap: 15px; padding: 17px 18px; border: 1px solid #d2e0d4; border-radius: 10px; color: #649273; text-align: left; background: #f5f9f5; }
+.patient-doctor-entry > span { display: flex; flex-direction: column; gap: 5px; color: #74866e; font-size: 12px; }
+.patient-doctor-entry strong { color: #587d62; font-size: 12px; font-weight: 600; }
+.patient-doctor-entry > svg { width: 20px; height: 20px; }
+.patient-doctor-entry > svg:last-child { margin-left: 9px; width: 15px; }
+#screen-patient { background: #f7faf7; }
+#screen-patient .pf-header { padding: 14px 18px; background: #fff; border-color: #edf1ec; }
+#screen-patient .pf-brand p { color: #719481; font-size: 10px; letter-spacing: 1.7px; }
+#screen-patient .pf-brand h1 { color: #294a37; font-size: 15px; margin-top: 2px; }
+#screen-patient .pf-header-button { border-color: #e7eee7; color: #54896c; border-radius: 12px; }
+#screen-patient .pf-content:not(.pf-stage-mode):not(.pf-results-mode):not(.pf-history-mode):not(.pf-camera-mode) { padding: 23px 19px 20px; }
+#screen-patient .pf-home { gap: 22px; }
+.pf-home-welcome { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pf-home-welcome p { font-size: 10px; color: #74866e; font-weight: 600; letter-spacing: 1.1px; }
+.pf-home-welcome h2 { font-size: 23px; letter-spacing: -.7px; margin: 7px 0 4px; color: #2d4c39; font-weight: 700; }
+.pf-home-welcome h2 > span { font-size: 20px; color: #74866e; font-weight: 400; }
+.pf-home-welcome div > span { font-size: 12px; color: #74866e; }
+.pf-welcome-icon { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 50%; border: 1px solid #e1eae0; background: #eef5e9; color: #81a275; flex-shrink: 0; }
+.pf-welcome-icon svg { width: 23px; height: 23px; }
+#screen-patient .pf-home-hero { border-radius: 21px; padding: 24px; background: linear-gradient(125deg, #1c6c52, #2b8b68); box-shadow: 0 9px 24px #2f755b10; }
+#screen-patient .pf-home-hero .pf-hero-tag { background: #ffffff0b; border-color: #ffffff1c; color: #d8eee0; font-size: 10px; padding: 6px 10px; }
+#screen-patient .pf-home-hero h2 { font-size: 29px; line-height: 1.3; margin-top: 18px; margin-bottom: 11px; letter-spacing: -1px; font-weight: 600; }
+#screen-patient .pf-home-hero p { max-width: 240px; color: #d0e8d7; font-size: 12px; line-height: 1.9; }
+#screen-patient .pf-home-hero .pf-hero-button { margin-top: 24px; font-size: 11px; min-height: 46px; color: #44765a; border-radius: 10px; }
+#screen-patient .pf-home-hero .pf-hero-art { top: 68px; right: -33px; opacity: .065; }
+#screen-patient .pf-card { border-color: #e4ece3; box-shadow: 0 2px 8px #29503902; }
+#screen-patient .pf-home-process { padding: 19px 17px; border-radius: 16px; }
+#screen-patient .pf-section-title { margin-bottom: 18px; }
+#screen-patient .pf-section-title h3 { color: #45614c; font-weight: 600; font-size: 12px; }
+#screen-patient .pf-section-title > span { color: #74866e; font-size: 10px; }
+#screen-patient .pf-home-steps > li > span { background: #f0f6ed; color: #8ca27a; width: 35px; height: 35px; border-radius: 10px; }
+#screen-patient .pf-home-steps small { color: #74866e; font-size: 12px; }
+#screen-patient .pf-home-steps strong { color: #74866e; font-size: 11px; font-weight: 500; }
+.pf-home-shortcuts { display: flex; gap: 10px; }
+.pf-home-shortcuts button { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; width: 50%; padding: 13px; text-align: left; border: 1px solid #e6ede2; border-radius: 13px; background: white; }
+.pf-home-shortcuts button > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; color: #83a175; background: #f0f6ea; }
+.pf-home-shortcuts button > span svg { width: 15px; height: 15px; }
+.pf-home-shortcuts strong { font-size: 11px; color: #6a8467; font-weight: 600; }
+.pf-home-shortcuts button > svg:last-child { width: 12px; height: 12px; color: #74866e; margin-left: auto; }
+#screen-patient .pf-home-doctor { padding: 18px; border-radius: 16px; }
+#screen-patient .pf-home-doctor .pf-section-title > svg { width: 18px; height: 18px; color: #74866e; }
+#screen-patient .pf-home-doctor__avatar { width: 43px; height: 48px; border-radius: 12px; background: #edf4e9; color: #74866e; }
+#screen-patient .pf-home-doctor h4 { font-size: 12px; color: #6b8164; }
+#screen-patient .pf-home-doctor p { font-size: 11px; color: #74866e; }
+#screen-patient .pf-home-doctor__location { color: #74866e; font-size: 11px; }
+.pf-doctor-portal { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding-block: 6px; color: #74866e; font-size: 11px; }
+.pf-doctor-portal svg { width: 13px; height: 13px; }
+#screen-patient .pf-bottom-nav { display: grid; align-self: stretch; width: 100%; margin: 0; padding: 10px 13px max(10px, env(safe-area-inset-bottom)); border-radius: 0; border-top: 1px solid #e5ece3; box-shadow: 0 -5px 20px #385c3003; gap: 0; }
+#screen-patient .pf-bottom-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 70px; height: 48px; border-radius: 12px; color: #74866e; }
+#screen-patient .pf-bottom-nav button > span { font-size: 10px; font-weight: 500; }
+#screen-patient .pf-bottom-nav .active { background: #eef5e8; color: #64905d; }
+#screen-patient .pf-bottom-nav svg { width: 20px; height: 20px; }
+.auth-context-label { color: #74866e; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 9px; }
+.auth-doctor .mobile-device-shell { width: 470px; max-width: calc(100% - 32px); height: auto; max-height: calc(100dvh - 48px); border-radius: 19px; background: white; }
+.auth-doctor .auth-social, .auth-doctor .auth-social-divider, .auth-doctor .auth-tabs, .auth-doctor #registerFormBox { display: none !important; }
+.auth-doctor .auth-scroll-body { padding: 12px 35px 35px; }
+.auth-doctor .auth-title { font-size: 22px; color: #426847; letter-spacing: -.6px; }
+.auth-doctor .auth-sub { font-size: 11px; }
+.auth-doctor .shared-form-card { border: 0; box-shadow: none; padding: 0; margin-top: 10px; }
+.auth-doctor .auth-logo-badge { margin-bottom: 15px; }
+.doctor-mode .toast { position: fixed; top: auto; left: auto; right: 30px; bottom: 24px; transform: translateY(10px); min-width: 250px; max-width: 400px; font-size: 12px; }
+.doctor-mode .toast.show { transform: translateY(0); }
+@media (min-width: 1000px) { body.patient-mode { gap: 105px; } body.patient-mode .patient-desktop-intro { display: block; width: 350px; } }
+@media (max-width: 600px), (max-height: 600px) {
+  body:not(.doctor-mode):not(.auth-doctor) { padding: 8px; }
+  body:not(.doctor-mode):not(.auth-doctor) .mobile-device-shell { max-width: 420px; height: calc(100dvh - 16px); max-height: none; border: 6px solid #1e293b; border-radius: 32px; }
+  .patient-desktop-intro { display: none !important; }
+  .auth-doctor { padding: 12px; }
+  .auth-doctor .mobile-device-shell { max-height: calc(100dvh - 24px); max-width: 100%; }
+  .auth-doctor .auth-scroll-body { padding-inline: 24px; }
+}
+@media (max-width: 350px) {
+  #screen-patient .pf-header { padding-inline: 12px; }
+  #screen-patient .pf-content:not(.pf-stage-mode):not(.pf-results-mode):not(.pf-history-mode):not(.pf-camera-mode) { padding-inline: 15px; }
+  #screen-patient .pf-home-hero { padding: 20px; }
+  #screen-patient .pf-home-hero h2 { font-size: 26px; }
+  .pf-home-welcome h2 { font-size: 21px; }
+  .pf-home-shortcuts { flex-direction: column; }
+  .pf-home-shortcuts button { width: 100%; }
+  #screen-patient .pf-bottom-nav button { width: 63px; }
+  .doctor-mode .toast { left: 15px; right: 15px; min-width: 0; max-width: none; }
+}
