@@ -87,6 +87,12 @@ function refreshPatientChrome() {
 }
 function goBackPatientPage() {
   const tab = patientFlow.tab;
+  if (tab === 'information' && patientFlow.draft?.editingAdministration) {
+    patientFlow.draft.editingAdministration = false;
+    patientFlow.draft.administrationCompleted = false;
+    renderPatientTab('diagnosis');
+    return;
+  }
   if (tab === 'history' && getHistoryDetailRecord()) {
     returnToPatientHistory();
     document.getElementById('patientBackButton').focus();

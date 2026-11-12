@@ -4,7 +4,7 @@
 const TONGUE_CAPTURE = Object.freeze({
   width: 150,
   height: 200,
-  duration: 3000,
+  duration: 2000,
   maximumFrameGap: 550,
   minimumBrightness: 65,
   maximumBrightness: 228,
@@ -65,7 +65,8 @@ function analyzeTongueFrame(image, previousGray, mask) {
 }
 
 function advanceTongueCountdown(clock, quality, now) {
-  if (!quality.ready) return { goodSince: null, lastSampleAt: now, remaining: 3, progress: 0, ready: false };
+  // A capture window lasts two seconds while alignment and frame selection run.
+  // Quality controls which frame may be saved, not the duration of the window.
   const continuous = clock.goodSince !== null && clock.lastSampleAt !== null
     && now - clock.lastSampleAt <= TONGUE_CAPTURE.maximumFrameGap;
   const goodSince = continuous ? clock.goodSince : now;
@@ -83,4 +84,77 @@ function computeTongueVideoCrop(frameWidth, frameHeight, videoWidth, videoHeight
   return { x: offsetX + left / scale, y: offsetY + guide.top / scale, width: guide.width / scale, height: guide.height / scale };
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { TONGUE_CAPTURE, analyzeTongueFrame, advanceTongueCountdown, computeTongueVideoCrop };
+// Estimate a centered, upright crop from the dominant tongue-colored component.
+// This is a framing heuristic; it does not identify anatomy or detect lesions.
+function estimateTongueFraming(image) {
+  const { width, height, data } = image;
+  const seen = new Uint8Array(width * height);
+  const colored = index => {
+    const r = data[index * 4], g = data[index * 4 + 1], b = data[index * 4 + 2];
+    return r > 65 && r - g > 22 && r > g * 1.18 && r > b * 1.06 && b > g * .9;
+  };
+  let best = null, bestScore = 0;
+  for (let seed = 0; seed < seen.length; seed++) {
+    if (seen[seed] || !colored(seed)) continue;
+    const pixels = [seed];
+    seen[seed] = 1;
+    let sx = 0, sy = 0;
+    for (let head = 0; head < pixels.length; head++) {
+      const index = pixels[head], x = index % width, y = Math.floor(index / width);
+      sx += x; sy += y;
+      const neighbors = [];
+      if (x > 0) neighbors.push(index - 1);
+      if (x + 1 < width) neighbors.push(index + 1);
+      if (y > 0) neighbors.push(index - width);
+      if (y + 1 < height) neighbors.push(index + width);
+      for (const next of neighbors) if (!seen[next] && colored(next)) { seen[next] = 1; pixels.push(next); }
+    }
+    if (pixels.length < width * height * .008) continue;
+    const cx = sx / pixels.length, cy = sy / pixels.length;
+    const distance = Math.hypot(cx / width - .5, cy / height - .5);
+    const score = pixels.length / (1 + distance * 6);
+    if (score > bestScore) { best = { pixels, cx, cy }; bestScore = score; }
+  }
+  if (!best) return null;
+  const { pixels, cx, cy } = best;
+  let xx = 0, yy = 0, xy = 0;
+  for (const index of pixels) {
+    const x = index % width - cx, y = Math.floor(index / width) - cy;
+    xx += x * x; yy += y * y; xy += x * y;
+  }
+  const eccentricity = Math.hypot(xx - yy, 2 * xy) / Math.max(1, xx + yy);
+  let angle = .5 * Math.atan2(2 * xy, xx - yy) - Math.PI / 2;
+  while (angle < -Math.PI / 2) angle += Math.PI;
+  while (angle > Math.PI / 2) angle -= Math.PI;
+  // A nearly round region has no reliable orientation.
+  if (eccentricity < .12) angle = 0;
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const index of pixels) {
+    const x = index % width - cx, y = Math.floor(index / width) - cy;
+    const rx = cos * x + sin * y, ry = -sin * x + cos * y;
+    minX = Math.min(minX, rx); maxX = Math.max(maxX, rx);
+    minY = Math.min(minY, ry); maxY = Math.max(maxY, ry);
+  }
+  const cropHeight = Math.max((maxY - minY + 1) / .76, (maxX - minX + 1) / .65 / .75);
+  return { centerX: cx / width, centerY: cy / height, height: cropHeight / height, angle };
+}
+
+function fitTongueFraming(base, detected, videoWidth, videoHeight) {
+  if (!detected) return { ...base, angle: 0 };
+  const angle = detected.angle;
+  let height = Math.min(videoHeight, Math.max(base.height * .3, base.height * detected.height));
+  let width = height * .75;
+  // The rotated rectangle must stay within the source, avoiding padded edges.
+  const extentX = Math.abs(Math.cos(angle)) * width + Math.abs(Math.sin(angle)) * height;
+  const extentY = Math.abs(Math.sin(angle)) * width + Math.abs(Math.cos(angle)) * height;
+  const scale = Math.min(1, videoWidth / extentX, videoHeight / extentY);
+  width *= scale; height *= scale;
+  const halfX = (Math.abs(Math.cos(angle)) * width + Math.abs(Math.sin(angle)) * height) / 2;
+  const halfY = (Math.abs(Math.sin(angle)) * width + Math.abs(Math.cos(angle)) * height) / 2;
+  const cx = Math.max(halfX, Math.min(videoWidth - halfX, base.x + detected.centerX * base.width));
+  const cy = Math.max(halfY, Math.min(videoHeight - halfY, base.y + detected.centerY * base.height));
+  return { x: cx - width / 2, y: cy - height / 2, width, height, angle };
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { TONGUE_CAPTURE, analyzeTongueFrame, advanceTongueCountdown, computeTongueVideoCrop, estimateTongueFraming, fitTongueFraming };

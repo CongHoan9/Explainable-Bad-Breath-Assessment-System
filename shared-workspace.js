@@ -9,17 +9,20 @@ function loadDoctorSharedRecords() {
     for (const record of Array.isArray(saved.history) ? saved.history : []) {
       if (!isValidAssessment(record)) continue;
       const decision = AssessmentExplanation.decide(record);
-      const profile = saved.profile || {};
-      const answers = ASSESSMENT_QUESTIONS.map((question, index) => ({ label: question.short, answer: question.options[record.answers[index]] }));
+      const profile = record.administration || saved.profile || {};
+      const modern = record.questionnaireVersion === 2;
+      const answers = modern ? ASSESSMENT_QUESTIONS.map((question, index) => ({ label: question.short, answer: AssessmentQuestionnaire.display(record, index) })) : LEGACY_ASSESSMENT_QUESTIONS.map((question, index) => ({ label: question.short, answer: question.options[record.answers[index]] }));
+      if (modern) answers.unshift({ label: 'Nghề nghiệp', answer: profile.occupation || 'Chưa cung cấp' }, { label: 'Địa chỉ', answer: profile.address || 'Chưa cung cấp' });
       const consultation = saved.consultations?.find(item => item.recordId === record.id);
       records.push({ id: SharedDataStore.caseId(account, record.id), assessmentId: record.id, account,
         name: profile.name || account, phone: consultation?.phone || profile.phone || '', age: profile.age || '—', gender: profile.gender || 'Chưa cập nhật',
         submittedAt: formatAssessmentDate(record.createdAt), createdAt: record.createdAt, status: decision.requiresExam ? 'urgent' : 'pending',
         resultTitle: decision.title, resultLevel: decision.level, explanation: decision.text, answers,
+        supplementalScreening: record.supplementalScreening,
         warningSigns: (record.warningSigns || []).map(id => AssessmentExplanation.WARNINGS[id]).filter(Boolean),
-        source: decision.source, photoUrl: record.photo, photoAngle: record.captureSimulated ? 'Ảnh mẫu minh họa' : 'Ảnh lưỡi do bệnh nhân chụp',
+        source: decision.source, photoUrl: record.photo, photoAngle: record.photoKind === 'upload' ? 'Ảnh tải lên từ file' : record.captureSimulated ? 'Ảnh mẫu minh họa' : 'Ảnh lưỡi do bệnh nhân chụp',
         patientNote: consultation?.note || '', tongueRegion: AssessmentExplanation.REGIONS[record.tongueRegion] || 'Chưa rõ vùng',
-        survey: { oralSensations: answers[2].answer }, doctorDiagnosis: '' });
+        survey: { oralSensations: modern ? AssessmentQuestionnaire.display(record, 21) : answers[2].answer }, doctorDiagnosis: '' });
     }
   }
   setDoctorPatientRecords(records.sort((a, b) => b.createdAt - a.createdAt));

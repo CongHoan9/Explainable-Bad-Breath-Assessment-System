@@ -2,6 +2,8 @@
  * Probability thresholds are provisional product settings, not clinical cutoffs.
  */
 const AssessmentExplanation = (() => {
+  const questionnaireSchema = typeof module !== 'undefined' && module.exports ? require('./questionnaire.js') : AssessmentQuestionnaire;
+  const upload = typeof module !== 'undefined' && module.exports ? require('./image-upload.js') : ImageUpload;
   const capture = typeof module !== 'undefined' && module.exports ? require('./camera-quality.js').TONGUE_CAPTURE : TONGUE_CAPTURE;
   const DISCLAIMER = 'Kết quả không thay thế chẩn đoán.';
   const WARNINGS = Object.freeze({ weightLoss: 'sụt cân không rõ lý do', thirst: 'khát nhiều', jaundice: 'vàng da', fruityBreath: 'mùi trái cây', ammoniaBreath: 'mùi khai' });
@@ -12,6 +14,8 @@ const AssessmentExplanation = (() => {
   const POLICY = Object.freeze({ minimumConfidence: .7, minimumClassGap: .1, decisionMargin: .05 });
 
   function usableImage(record) {
+    if (record?.photoKind === 'upload') return typeof record.photo === 'string'
+      && /^data:image\/(jpeg|png)[;,]/.test(record.photo) && upload.valid(record.imageAnalysis);
     const q = record?.captureQuality;
     return record?.photoKind === 'camera' && typeof record.photo === 'string' && /^data:image\/(jpeg|png)[;,]/.test(record.photo)
       && q?.ready === true && q.lighting === true && q.sharp === true && q.aligned === true && q.stable === true
@@ -34,10 +38,10 @@ const AssessmentExplanation = (() => {
   }
   function decide(record) {
     const warningIds = Object.keys(WARNINGS).filter(id => Array.isArray(record.warningSigns) && record.warningSigns.includes(id));
-    const screeningComplete = record.warningScreened === true && Array.isArray(record.warningSigns) && record.warningSigns.every(id => Object.hasOwn(WARNINGS, id));
+    const screeningComplete = record.supplementalScreening === 'not-collected' || (record.warningScreened === true && Array.isArray(record.warningSigns) && record.warningSigns.every(id => Object.hasOwn(WARNINGS, id)));
     const imageReady = usableImage(record);
     const isTest = record.photoKind === 'test';
-    const questionnaire = questionnaireResult(record.answers);
+    const questionnaire = questionnaireResult(record.answers, record);
     const confidence = modelConfidence(record.modelOutput);
     const needsRetake = !imageReady && !isTest;
     const urgent = warningIds.includes('fruityBreath') && warningIds.includes('thirst');
@@ -45,22 +49,29 @@ const AssessmentExplanation = (() => {
     const resultLevel = canShowLevel ? (isTest ? questionnaire.level : confidence.level) : null;
     const state = needsRetake ? 'retake' : warningIds.length ? 'warning' : !screeningComplete ? 'incomplete' : isTest ? (questionnaire ? 'questionnaire' : 'incomplete') : confidence.status === 'high' ? 'estimate' : confidence.status;
     const title = needsRetake ? 'Ảnh chưa đạt yêu cầu' : warningIds.length ? 'Cần khám bác sĩ' : !screeningComplete || (isTest && !questionnaire) ? 'Thiếu câu trả lời' : canShowLevel ? LEVELS[resultLevel] : 'Chưa đủ chắc chắn';
-    const coating = COATINGS[record.answers?.[3]] || 'chưa rõ mức rêu';
+    const modern = record.questionnaireVersion === 2;
+    const coating = modern ? 'chưa ghi nhận mức rêu lưỡi' : COATINGS[record.answers?.[3]] || 'chưa rõ mức rêu';
     const region = REGIONS[record.tongueRegion] || REGIONS.unspecified;
-    const description = `${coating}${record.answers?.[3] === 0 ? '' : `, ${region}`}; ${SYMPTOMS[record.answers?.[2]] || 'chưa rõ triệu chứng'}`;
+    const description = modern ? `${record.answers?.[21] === 0 ? 'có' : 'không có'} khô rát khoang miệng, thiếu nước bọt hoặc khó nuốt thức ăn` : `${coating}${record.answers?.[3] === 0 ? '' : `, ${region}`}; ${SYMPTOMS[record.answers?.[2]] || 'chưa rõ triệu chứng'}`;
     const warningAction = urgent ? 'Cần đến cơ sở cấp cứu ngay.' : 'Cần khám bác sĩ sớm.';
     let text;
     if (needsRetake) text = `Ảnh chưa đạt yêu cầu; hãy chụp lại. ${warningIds.length ? `Bạn báo: ${warningIds.map(id => WARNINGS[id]).join(', ')}. ${warningAction}` : confidence.status === 'low' ? 'Chưa có kết luận. Độ tin cậy thấp; bạn nên khám bác sĩ.' : 'Chưa có kết luận. Chụp nơi đủ sáng, giữ máy yên và đặt lưỡi trong khung.'}`;
     else if (warningIds.length) text = `Bạn báo: ${warningIds.map(id => WARNINGS[id]).join(', ')}. Bạn mô tả ${coating}${record.answers?.[3] === 0 ? '' : `, ${region}`}. ${warningAction}`;
-    else if (isTest) text = `Bạn mô tả ${description}. ${questionnaire ? (questionnaire.level >= 2 ? 'Nên khám bác sĩ.' : '') : 'Chưa đủ câu trả lời.'}`;
+    else if (isTest) text = `${modern ? 'Mức độ do bạn tự đánh giá, chưa được xác nhận bằng thăm khám. ' : ''}Bạn mô tả ${description}. ${questionnaire ? (questionnaire.level >= 2 ? 'Nên khám bác sĩ.' : '') : 'Chưa đủ câu trả lời.'}`;
     else if (!screeningComplete) text = `Bạn mô tả ${description}. Chưa đủ thông tin cảnh báo; chưa thể kết luận. Hãy đánh giá lại và khám bác sĩ.`;
+    else if (record.photoKind === 'upload' && confidence.status === 'unknown') text = 'Đã đọc ảnh tải lên và kiểm tra các chỉ số hình ảnh. Chưa có mô hình suy luận để xác định mức độ hôi miệng từ ảnh.';
     else if (confidence.status !== 'high') text = `Bạn mô tả ${description}. ${confidence.status === 'low' ? 'Độ tin cậy thấp' : 'Chưa có độ tin cậy'}; nên khám bác sĩ.`;
     else text = `Bạn mô tả ${description}. ${confidence.level >= 2 ? 'Nên khám bác sĩ.' : 'Nên khám nếu mùi kéo dài.'}`;
     return { state, title, source: isTest ? 'questionnaire' : 'model', confidence: isTest ? 'not-applicable' : confidence.status, needsRetake, urgent, canShowLevel, level: resultLevel,
       requiresExam: warningIds.length > 0 || (!isTest && confidence.status === 'low') || (!needsRetake && (!screeningComplete || (!isTest && confidence.status !== 'high') || (canShowLevel && resultLevel >= 2))),
       text: `${text.trim()} ${DISCLAIMER}` };
   }
-  function questionnaireResult(answers) {
+  function questionnaireResult(answers, record) {
+    if (Array.isArray(answers) && answers.length === 23) {
+      if (record && !questionnaireSchema.complete(answers, record.administration, record.answerDetails)) return null;
+      if (!Number.isInteger(answers[22]) || answers[22] < 0 || answers[22] > 3) return null;
+      return { score: null, level: answers[22] };
+    }
     if (!Array.isArray(answers) || answers.length !== 5 || !Array.from(answers).every(answer => Number.isInteger(answer) && answer >= 0 && answer <= 3)) return null;
     const score = answers.reduce((sum, answer) => sum + answer, 0);
     return { score, level: Math.min(3, Math.floor((score + 1) / 4)) };

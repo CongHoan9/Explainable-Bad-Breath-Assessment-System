@@ -4,10 +4,39 @@ let resultResizeObserver = null;
 let resultScrollFrame = null;
 
 function renderAnalyzedTongue(record) {
-  const coating = record.answers[3];
+  if (record.photoKind === 'upload') return renderUploadedTongueAnalysis(record);
+  const modern = record.questionnaireVersion === 2;
+  const coating = modern ? null : record.answers[3];
   return `<section class="pf-card"><div class="pf-section-title"><h3>Ảnh phân tích</h3><span class="pf-badge">${record.photoKind === 'test' ? 'Ảnh mẫu' : 'Ảnh đã lưu'}</span></div><div class="pf-image-switch" role="group" aria-label="Chế độ xem ảnh"><button onclick="toggleAssessmentOverlay(false)" aria-pressed="${!patientFlow.overlay}" class="${!patientFlow.overlay ? 'active' : ''}">Ảnh gốc</button><button onclick="toggleAssessmentOverlay(true)" aria-pressed="${patientFlow.overlay}" class="${patientFlow.overlay ? 'active' : ''}">Vùng quan sát</button></div>
-    <div class="pf-analysis-image pf-portrait-analysis"><img src="${escapePatientText(record.photo)}" alt="Ảnh lưỡi trong lần đánh giá">${patientFlow.overlay ? `<svg viewBox="0 0 300 400" aria-label="Sơ đồ vùng tham chiếu trên lưỡi" role="img"><defs><clipPath id="tongueRegion"><path d="${TONGUE_CAPTURE.outline}"/></clipPath></defs><g clip-path="url(#tongueRegion)">${[0, 1, 2].map(row => [0, 1].map(col => `<rect x="${53 + col * 97}" y="${52 + row * 101}" width="97" height="101" fill="${coating === 0 ? '#10b981' : row < (coating === 1 ? 1 : coating === 2 ? 2 : 3) ? '#f59e0b' : '#2dd4bf'}" fill-opacity=".3" stroke="white" stroke-opacity=".8" stroke-dasharray="3 3"/>`).join('')).join('')}</g><path d="${TONGUE_CAPTURE.outline}" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="5 4"/><text x="150" y="32" text-anchor="middle" fill="#fff" stroke="#164e63" stroke-width=".4" font-size="11">Vùng cuống lưỡi</text><text x="150" y="382" text-anchor="middle" fill="#fff" stroke="#164e63" stroke-width=".4" font-size="11">Vùng đầu lưỡi</text></svg>` : ''}</div>
-    <div class="pf-analysis-legend"><span><i></i> Vùng tham chiếu</span><span><i></i> Vùng rêu theo mô tả</span></div><p class="pf-image-caption">Lớp phủ màu minh họa theo mô tả rêu lưỡi trong câu trả lời, không xác định tổn thương trên ảnh.</p></section>`;
+    <div class="pf-analysis-image pf-portrait-analysis"><img src="${escapePatientText(record.photo)}" alt="Ảnh lưỡi trong lần đánh giá">${patientFlow.overlay ? `<svg viewBox="0 0 300 400" aria-label="Sơ đồ vùng tham chiếu trên lưỡi" role="img"><defs><clipPath id="tongueRegion"><path d="${TONGUE_CAPTURE.outline}"/></clipPath></defs><g clip-path="url(#tongueRegion)">${[0, 1, 2].map(row => [0, 1].map(col => `<rect x="${53 + col * 97}" y="${52 + row * 101}" width="97" height="101" fill="${coating === null ? '#2dd4bf' : coating === 0 ? '#10b981' : row < (coating === 1 ? 1 : coating === 2 ? 2 : 3) ? '#f59e0b' : '#2dd4bf'}" fill-opacity=".3" stroke="white" stroke-opacity=".8" stroke-dasharray="3 3"/>`).join('')).join('')}</g><path d="${TONGUE_CAPTURE.outline}" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="5 4"/><text x="150" y="32" text-anchor="middle" fill="#fff" stroke="#164e63" stroke-width=".4" font-size="11">Vùng cuống lưỡi</text><text x="150" y="382" text-anchor="middle" fill="#fff" stroke="#164e63" stroke-width=".4" font-size="11">Vùng đầu lưỡi</text></svg>` : ''}</div>
+    <div class="pf-analysis-legend"><span><i></i> Vùng tham chiếu</span>${modern ? '' : '<span><i></i> Vùng rêu theo mô tả</span>'}</div><p class="pf-image-caption">${modern ? 'Lớp phủ chỉ minh họa vùng tham chiếu trên lưỡi; bảng hỏi không đánh giá mức rêu và ảnh chưa được mô hình phân tích.' : 'Lớp phủ màu minh họa theo mô tả rêu lưỡi trong câu trả lời, không xác định tổn thương trên ảnh.'}</p></section>`;
+}
+function renderUploadedTongueAnalysis(record) {
+  const analysis = record.imageAnalysis;
+  const demo = DemoImageCatalog.byId(record.demoImageId);
+  const reference = Boolean(demo && patientFlow.overlay);
+  const photo = reference ? encodeURI(demo.reference) : record.photo;
+  const dimensions = analysis ? `${analysis.width} × ${analysis.height}` : '—';
+  const metrics = ImageUpload.valid(analysis) ? [
+    ['Kích thước ảnh', dimensions],
+    ['Độ sáng trung bình', `${analysis.brightness.toFixed(1)} / 255`],
+    ['Độ tương phản', analysis.contrast.toFixed(1)],
+    ['Chỉ số độ nét', analysis.sharpness.toFixed(1)]
+  ] : [];
+  return `<section class="pf-card"><div class="pf-section-title"><h3>Ảnh phân tích</h3><span class="pf-badge">${demo ? 'Ảnh demo' : 'Ảnh tải lên'}</span></div>${demo ? `<div class="pf-image-switch" role="group" aria-label="Ảnh đối chiếu"><button onclick="toggleAssessmentOverlay(false)" aria-pressed="${!reference}" class="${!reference ? 'active' : ''}">Ảnh tải lên</button><button onclick="toggleAssessmentOverlay(true)" aria-pressed="${reference}" class="${reference ? 'active' : ''}">Ảnh đối chiếu</button></div>` : ''}<div class="pf-upload-analysis-image"><img onload="orientUploadedResultImage(this)" src="${escapePatientText(photo)}" alt="${reference ? 'Ảnh tương ứng trong thư mục Đã phân tích' : 'Ảnh đã tải lên từ file'}"></div><dl class="pf-image-metrics">${metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapePatientText(value)}</dd></div>`).join('')}</dl></section>`;
+}
+function orientUploadedResultImage(image) {
+  // Reference files and older saved uploads can still contain landscape pixels.
+  // Rotate their display without cropping or depending on canvas file permissions.
+  const frame = image.parentElement;
+  if (!frame || !image.naturalWidth || !image.naturalHeight) return;
+  const landscape = image.naturalWidth > image.naturalHeight;
+  frame.classList.toggle('is-landscape', landscape);
+  if (landscape) {
+    frame.style.aspectRatio = `${image.naturalHeight} / ${image.naturalWidth}`;
+    frame.style.setProperty('--upright-image-width', `${image.naturalWidth / image.naturalHeight * 100}%`);
+    frame.style.setProperty('--upright-image-height', `${image.naturalHeight / image.naturalWidth * 100}%`);
+  } else frame.style.aspectRatio = `${image.naturalWidth} / ${image.naturalHeight}`;
 }
 function renderAssessmentScale(decision) {
   const hasLevel = decision.canShowLevel;
